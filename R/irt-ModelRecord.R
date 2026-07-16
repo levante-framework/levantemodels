@@ -140,7 +140,7 @@ count_items <- \(mod_rec) {
 #' extract item parameters from a model record
 #' @inheritParams model_from_record
 #' @export
-mod_coefs <- \(mod_rec) {
+mod_coefs <- \(mod_rec, item_sep = "-") {
   n_resp <- bind_cols(group = mod_rec@groups, mod_rec@data) |>
     tidyr::pivot_longer(cols = -"group", names_to = "item", values_to = "correct") |>
     filter(!is.na(.data$correct)) |>
