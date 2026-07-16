@@ -1,4 +1,4 @@
-Package: rlevante
+Package: levantemodels
 Type: Package
 Title: LEVANTE Data Processing and Modeling
 Version: 0.1.0
@@ -47,3 +47,4 @@ Roxygen: list(markdown = TRUE)
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Config/roxygen2/version: 8.0.0
+RoxygenNote: 7.3.3

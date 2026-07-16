@@ -16,7 +16,7 @@ A data frame of recoded, scoring-ready trials.
 }
 \description{
 \code{recode_trials()} applies the task-specific corrections that make
-\code{\link[levante:get_trials]{get_trials()}} output scoring-ready, and \strong{must be applied before IRT
+\code{\link[levante:get_trials]{levante::get_trials()}} output scoring-ready, and \strong{must be applied before IRT
 scoring}: the calibrated models were fit on recoded trials, so scoring raw
 \code{get_trials()} output yields subtly wrong values. Corrections include slider
 thresholding (a response is correct within \code{slider_threshold} of the target,

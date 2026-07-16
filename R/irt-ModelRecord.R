@@ -139,6 +139,7 @@ count_items <- \(mod_rec) {
 
 #' extract item parameters from a model record
 #' @inheritParams model_from_record
+#' @param item_sep separator between item and instance index
 #' @export
 mod_coefs <- \(mod_rec, item_sep = "-") {
   n_resp <- bind_cols(group = mod_rec@groups, mod_rec@data) |>

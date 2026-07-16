@@ -4,10 +4,12 @@
 \alias{mod_coefs}
 \title{extract item parameters from a model record}
 \usage{
-mod_coefs(mod_rec)
+mod_coefs(mod_rec, item_sep = "-")
 }
 \arguments{
 \item{mod_rec}{ModelRecord object}
+
+\item{item_sep}{separator between item and instance index}
 }
 \description{
 extract item parameters from a model record
