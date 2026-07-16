@@ -13,20 +13,20 @@ test_that("parse_response() turns a JSON-ish string into a character vector", {
 
 test_that("code_stim() infers size/color/shape with number and background defaults", {
   expect_equal(
-    code_stim(c("med", "red", "star"), grp = "g"),
+    code_stim(c("med", "red", "star")),
     c(size = "med", color = "red", shape = "star",
       number = "1", background = "white")
   )
   # number and background are read from the trailing parts when present
   expect_equal(
-    code_stim(c("med", "green", "circle", "2", "black"), grp = "g"),
+    code_stim(c("med", "green", "circle", "2", "black")),
     c(size = "med", color = "green", shape = "circle",
       number = "2", background = "black")
   )
 })
 
 test_that("code_dims() codes each stimulus in a vector", {
-  out <- code_dims(c("sm-red-star", "lg-red-circle"), grp = "g")
+  out <- code_dims(c("sm-red-star", "lg-red-circle"))
   expect_length(out, 2)
   expect_equal(out[[1]][["color"]], "red")
   expect_equal(out[[2]][["shape"]], "circle")
@@ -35,7 +35,7 @@ test_that("code_dims() codes each stimulus in a vector", {
 test_that("match_opts_dims() counts matching pairs on non-constant dimensions", {
   # three stimuli: two share color (red); size and shape all distinct; number
   # and background are constant (and so dropped)
-  opts <- code_dims(c("sm-red-star", "lg-red-circle", "md-blue-square"), grp = "g")
+  opts <- code_dims(c("sm-red-star", "lg-red-circle", "md-blue-square"))
   out <- match_opts_dims(opts)
 
   expect_equal(out[["color"]], 1)  # one red/red pair
@@ -46,7 +46,7 @@ test_that("match_opts_dims() counts matching pairs on non-constant dimensions", 
 })
 
 test_that("match_resp_dims() names dimensions the response stimuli share", {
-  resp <- code_dims(c("sm-red-star", "lg-red-circle"), grp = "g")
+  resp <- code_dims(c("sm-red-star", "lg-red-circle"))
   opts_dims <- c(size = 0, color = 1, shape = 0)  # as from match_opts_dims
 
   # the two response stimuli share only color, so that's the matched dimension

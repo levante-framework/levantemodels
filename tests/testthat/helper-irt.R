@@ -4,13 +4,13 @@
 # the IRT tests run without any network access.
 
 # long-format trial data (one row per run x item) from a response matrix, with
-# items appearing in a chosen order. `site` is a scalar or a per-run vector.
-irt_trials_from_matrix <- function(resp, run_ids, item_uids, item_order, site) {
+# items appearing in a chosen order. `dataset` is a scalar or a per-run vector.
+irt_trials_from_matrix <- function(resp, run_ids, item_uids, item_order, dataset) {
   grid <- expand.grid(run = seq_along(run_ids), item = item_order)
-  site_col <- if (length(site) == 1) site else site[grid$run]
+  dataset_col <- if (length(dataset) == 1) dataset else dataset[grid$run]
   data.frame(
     run_id = run_ids[grid$run],
-    site = site_col,
+    dataset = dataset_col,
     item_uid = item_uids[grid$item],
     correct = as.logical(resp[cbind(grid$run, grid$item)])
   )
@@ -37,7 +37,7 @@ irt_fixture_2pl <- function(n_persons = 400, item_order = c(3, 1, 5, 2, 6, 4)) {
   mod <- mirt::mirt(resp, 1, itemtype = "2PL", verbose = FALSE)
   run_ids <- paste0("run", seq_len(n_persons))
   mod_rec <- modelrecord(mod, run_ids)
-  trials <- irt_trials_from_matrix(resp, run_ids, item_uids, item_order, site = "all")
+  trials <- irt_trials_from_matrix(resp, run_ids, item_uids, item_order, dataset = "all")
 
   spec <- list(item_task = "test", dataset = "all", model_set = "test",
                subset = "all", itemtype = "2PL", nfact = "f1",
@@ -70,7 +70,7 @@ irt_fixture_multigroup <- function(n_per_group = 250) {
   run_ids <- paste0("run", seq_along(groups))
   mod_rec <- modelrecord(mod, run_ids)
   trials <- irt_trials_from_matrix(resp, run_ids, item_uids,
-                                   seq_along(item_uids), site = groups)
+                                   seq_along(item_uids), dataset = groups)
 
   spec <- list(item_task = "mg", dataset = "all", model_set = "test",
                subset = "all", itemtype = "Rasch", nfact = "f1",

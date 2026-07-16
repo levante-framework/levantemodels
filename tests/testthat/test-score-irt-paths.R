@@ -4,7 +4,7 @@
 
 test_that("score_irt() reconstructs a multigroup model and scores one group", {
   fx <- irt_fixture_multigroup()
-  g1_trials <- subset(fx$trials, site == "g1")
+  g1_trials <- subset(fx$trials, dataset == "g1")
 
   scored <- suppressMessages(score_irt(g1_trials, fx$spec, fx$mod_rec))
   gold <- scores(fx$mod_rec)
@@ -30,19 +30,19 @@ test_that("score_irt() backfills items missing from the data and scores all runs
 test_that("score_irt() falls back to a model group for scalar models", {
   fx <- irt_fixture_2pl()
   # a group not present in the model; scalar invariance -> use the model's group
-  trials_badsite <- transform(fx$trials, site = "not_a_group")
+  trials_baddataset <- transform(fx$trials, dataset = "not_a_group")
 
-  scored <- suppressMessages(score_irt(trials_badsite, fx$spec, fx$mod_rec))
+  scored <- suppressMessages(score_irt(trials_baddataset, fx$spec, fx$mod_rec))
 
   expect_equal(nrow(scored), length(fx$run_ids))
 })
 
 test_that("score_irt() returns NULL for metric/configural models with an unknown group", {
   fx <- irt_fixture_2pl()
-  trials_badsite <- transform(fx$trials, site = "not_a_group")
+  trials_baddataset <- transform(fx$trials, dataset = "not_a_group")
 
   for (inv in c("metric", "configural")) {
     spec <- modifyList(fx$spec, list(invariance = inv))
-    expect_null(suppressMessages(score_irt(trials_badsite, spec, fx$mod_rec)))
+    expect_null(suppressMessages(score_irt(trials_baddataset, spec, fx$mod_rec)))
   }
 })

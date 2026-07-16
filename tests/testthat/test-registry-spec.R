@@ -3,24 +3,24 @@
 # silent change here would point scoring at the wrong (or no) model.
 
 test_that("mod_spec_str() joins non-NA spec fields with underscores", {
-  spec <- list(model_set = "multigroup_site", subset = "all_items",
+  spec <- list(model_set = "multigroup_dataset", subset = "all_items",
                itemtype = "Rasch", nfact = "f1", invariance = "scalar")
   expect_equal(mod_spec_str(spec),
-               "multigroup_site_all_items_Rasch_f1_scalar")
+               "multigroup_dataset_all_items_Rasch_f1_scalar")
 
   # NA fields are dropped
   spec_na <- modifyList(spec, list(invariance = NA, nfact = NA))
-  expect_equal(mod_spec_str(spec_na), "multigroup_site_all_items_Rasch")
+  expect_equal(mod_spec_str(spec_na), "multigroup_dataset_all_items_Rasch")
 })
 
 test_that("model_spec_filename() builds the registry path", {
-  spec <- list(item_task = "math", model_set = "multigroup_site",
+  spec <- list(item_task = "math", model_set = "multigroup_dataset",
                subset = "all_items", itemtype = "Rasch", nfact = "f1",
                invariance = "scalar")
 
   expect_equal(
     as.character(model_spec_filename(spec)),
-    "math/multigroup_site/all_items/math_Rasch_f1_scalar.rds"
+    "math/multigroup_dataset/all_items/math_Rasch_f1_scalar.rds"
   )
 })
 
@@ -28,7 +28,7 @@ test_that("get_model_spec() returns a single-row spec or NULL", {
   scoring_table <- tibble(
     item_task = c("math", "vocab", "math"),
     dataset = c("co", "co", "us"),
-    model_set = "multigroup_site"
+    model_set = "multigroup_dataset"
   )
 
   spec <- get_model_spec("math", "co", scoring_table)

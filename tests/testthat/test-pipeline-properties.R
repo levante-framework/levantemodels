@@ -15,10 +15,10 @@ test_that("score_irt() uses the data's group prior, not another group's", {
   # group g2's runs must (a) reproduce g2's calibration scores and (b) give
   # different answers than if the same responses were mislabeled as g1.
   fx <- irt_fixture_multigroup()
-  g2 <- subset(fx$trials, site == "g2")
+  g2 <- subset(fx$trials, dataset == "g2")
 
   scored_g2 <- suppressMessages(score_irt(g2, fx$spec, fx$mod_rec))
-  mislabeled <- suppressMessages(score_irt(transform(g2, site = "g1"), fx$spec, fx$mod_rec))
+  mislabeled <- suppressMessages(score_irt(transform(g2, dataset = "g1"), fx$spec, fx$mod_rec))
 
   gold <- merge(scored_g2, scores(fx$mod_rec), by = "run_id")
   expect_gt(cor(gold$score, gold$ability), 0.99)         # correct group reproduces calibration
@@ -33,7 +33,7 @@ test_that("score_irt() ignores items present in the data but not in the model", 
 
   with_extra <- rbind(
     fx$trials,
-    data.frame(run_id = fx$run_ids[1], site = "all",
+    data.frame(run_id = fx$run_ids[1], dataset = "all",
                item_uid = "not_a_model_item", correct = TRUE)
   )
   extra <- suppressMessages(score_irt(with_extra, fx$spec, fx$mod_rec))
@@ -47,7 +47,7 @@ test_that("score_irt() returns an NA score (not an error) for a run with no mode
   fx <- irt_fixture_2pl()
   with_ghost <- rbind(
     fx$trials,
-    data.frame(run_id = "ghost_run", site = "all",
+    data.frame(run_id = "ghost_run", dataset = "all",
                item_uid = "not_a_model_item", correct = TRUE)
   )
   scored <- suppressMessages(score_irt(with_ghost, fx$spec, fx$mod_rec))
@@ -83,7 +83,7 @@ test_that("recovered abilities track the true thetas (coarse end-to-end sanity)"
                itemtype = "2PL", nfact = "f1", invariance = "scalar",
                redivis_source = "t:a:v1")
   grid <- expand.grid(run = seq_len(n_persons), item = seq_len(n_items))
-  trials <- data.frame(run_id = run_ids[grid$run], site = "all",
+  trials <- data.frame(run_id = run_ids[grid$run], dataset = "all",
                        item_uid = item_uids[grid$item],
                        correct = as.logical(resp[cbind(grid$run, grid$item)]))
 

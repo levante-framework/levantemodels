@@ -24,6 +24,8 @@ test_that("score() routes to the custom sre scorer when no spec matches", {
   trials <- tibble::tibble(
     run_id = rep(c("a", "b"), each = 2),
     trial_number = rep(1:2, 2),
+    rt_numeric = rep(20, 4),
+    dataset = "co",
     correct = c(TRUE, TRUE, TRUE, FALSE)
   )
 
