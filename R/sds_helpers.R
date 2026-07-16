@@ -11,7 +11,7 @@ parse_response <- \(resp) {
 
 # infer dimensions for one stimulus
 # e.g. med-red-star / med-red-star-2 / med-red-star-striped /  med-red-star-2-striped
-code_stim <- \(stim, grp) {
+code_stim <- \(stim) {
 
   # extract number if present, other use default "1"
   num <- stringr::str_extract(stim, "\\d") |> purrr::discard(is.na)
@@ -26,8 +26,8 @@ code_stim <- \(stim, grp) {
 }
 
 # split vector of stimuli (e.g. med-green-circle-2-black) into parts and infer parts' dimensions
-code_dims <- \(resp, grp) {
-  resp |> stringr::str_split("-") |> purrr::map(\(s) code_stim(s, grp))
+code_dims <- \(resp) {
+  resp |> stringr::str_split("-") |> purrr::map(code_stim)
 }
 
 # given list of character vectors of named dimensions,
@@ -43,6 +43,14 @@ match_resp_dims <- \(resp, opts_dims) {
   resp_t <- resp |> purrr::transpose() |> purrr::map(unlist)
   resp_t[names(opts_dims)] |> purrr::map(n_distinct) |>
     purrr::keep(\(x) x < length(resp)) |> names() |> sort()
+}
+
+# given list of character vectors of named dimensions,
+# return which dimension(s) match for all items (out of size/color/shape)
+same_dim <- \(opts) {
+  opts |> purrr::transpose() |> purrr::keep_at(c("size", "color", "shape")) |>
+    purrr::map(unlist) |> purrr::map(base::table) |>
+    purrr::keep(\(x) length(x) == 1) |> names()
 }
 
 code_misses <- \(opts_dims, resp_dims, k) {
