@@ -110,7 +110,7 @@ score_sre <- \(trial_data_task, dataset) {
   message(glue::glue('--Using SRE scoring'))
 
   trial_data_task |>
-    group_by(.data$run_id) |>
+    group_by(.data$dataset, .data$run_id) |>
     summarise(elapsed = sum(.data$rt_numeric, na.rm = TRUE) / 1000,
               net = sum(.data$correct) - sum(!.data$correct)) |>
     filter(.data$elapsed >= 30) |>

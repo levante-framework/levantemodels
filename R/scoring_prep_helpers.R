@@ -151,7 +151,8 @@ recode_sds <- function(df) {
     mutate(dims = unlist(.data$opts_dims)) |>
     mutate(item_uid = glue::glue("sds_same_{dims}")) |>
     select("answer", "distractors", "item_uid")
-  sds_same_coded <- sds_same |> select(-"item_uid") |> inner_join(sds_same_items)
+  sds_same_coded <- sds_same |> select(-"item_uid") |>
+    inner_join(sds_same_items, by = c("answer", "distractors"))
   sds_intro <- bind_rows(sds_dimensions, sds_same_coded)
 
   # figure out which responses correspond to each trial
