@@ -111,10 +111,13 @@ score_sre <- \(trial_data_task, dataset) {
 
   trial_data_task |>
     group_by(.data$run_id) |>
-    filter(.data$trial_number <= 180) |>
-    summarise(score = (sum(.data$correct) - sum(!.data$correct)) / 180) |>
-    mutate(score = scale(score)[,1]) |>
-    mutate(score_type = "guessing_adjusted_number_correct_scaled")
+    summarise(elapsed = sum(.data$rt_numeric, na.rm = TRUE) / 1000,
+              net = sum(.data$correct) - sum(!.data$correct)) |>
+    filter(.data$elapsed >= 30) |>
+    group_by(.data$dataset) |>
+    mutate(score = scale(.data$net / .data$elapsed * 180)[, 1],
+           score_type = "guessing_adjusted_rate_scaled") |>
+    select(-"elapsed", -"net")
 }
 
 mod_spec_str <- \(spec) {
@@ -140,6 +143,7 @@ score <- \(task, dataset, trials, runs, scoring_table, registry_dir) {
   # custom_tasks <- list(pa = score_pa, sre = score_sre)
 
   # if scoring_table has entry for task + dataset, use that model spec
+  # TODO: make model depend on registry version in scoring table
   mod_spec <- get_model_spec(task, dataset, scoring_table)
   if (!is.null(mod_spec)) {
     mod_rec <- get_model_record(mod_spec, registry_dir)
