@@ -195,16 +195,17 @@ add_item_ids <- function(trials) {
                as.character() |>
                na_if("math_fraction_512_16") |>
                na_if("mg_forward_3grid_len2")) |>
-      # remove stray SDS instruction items
+      # remove stray SDS instructions and something-same trials (not actually test trials)
       filter(is.na(.data$item_uid) | !stringr::str_detect(.data$item_uid, "-instr")) |>
+      filter_out(.data$corpus_trial_type == "something-same-1") |>
       # recode memory-game answers
-      mutate(answer = if_else(.data$task_id == "memory-game",
-                              as.character(stringr::str_count(.data$answer, ":")),
-                              .data$answer)) |>
+      mutate(answer_sub = if_else(.data$task_id == "memory-game",
+                                  as.character(stringr::str_count(.data$answer, ":")),
+                                  .data$answer)) |>
       # create item key for joining with item map
-      mutate(across(c(.data$corpus_trial_type, .data$item, .data$answer, .data$distractors),
+      mutate(across(c(.data$corpus_trial_type, .data$item, .data$answer_sub, .data$distractors),
                     \(s) tidyr::replace_na(s, ""))) |>
-      mutate(item_key = paste(.data$corpus_trial_type, .data$item, .data$answer, .data$distractors) |>
+      mutate(item_key = paste(.data$corpus_trial_type, .data$item, .data$answer_sub, .data$distractors) |>
                stringr::str_trim()) |>
       # remove trials with no item information
       filter(!is.na(.data$item_uid) | .data$item_key != "")
@@ -228,8 +229,8 @@ add_item_ids <- function(trials) {
     filter(!is.na(.data$item_uid), .data$item_uid != "") |>
     # collapse item ID sources
     group_by(.data$trial_id, .data$task_id, .data$item_uid) |>
-    summarise(item_uid_source = list(.data$item_uid_source)) |>
-    ungroup()
+    summarise(item_uid_source = list(.data$item_uid_source),
+              .groups = "drop")
 
   # validate that no trial maps to multiple conflicting item IDs
   conflicts <- trials_mapped |> group_by(.data$trial_id) |> filter(n() > 1) |> ungroup()
