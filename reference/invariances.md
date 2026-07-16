@@ -7,3 +7,7 @@ mapping from invariance names to corresponding mirt argument
 ``` r
 invariances
 ```
+
+## Format
+
+An object of class `list` of length 3.

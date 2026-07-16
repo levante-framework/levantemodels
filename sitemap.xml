@@ -28,6 +28,7 @@
 <url><loc>https://levante-framework.github.io/levantemodels/reference/get_registry_file.html</loc></url>
 <url><loc>https://levante-framework.github.io/levantemodels/reference/index.html</loc></url>
 <url><loc>https://levante-framework.github.io/levantemodels/reference/invariances.html</loc></url>
+<url><loc>https://levante-framework.github.io/levantemodels/reference/levantemodels-package.html</loc></url>
 <url><loc>https://levante-framework.github.io/levantemodels/reference/link_surveys.html</loc></url>
 <url><loc>https://levante-framework.github.io/levantemodels/reference/mirt_aic.html</loc></url>
 <url><loc>https://levante-framework.github.io/levantemodels/reference/mirt_bic.html</loc></url>
@@ -54,7 +55,6 @@
 <url><loc>https://levante-framework.github.io/levantemodels/reference/remove_no_var_items.html</loc></url>
 <url><loc>https://levante-framework.github.io/levantemodels/reference/remove_no_var_items_bygroup.html</loc></url>
 <url><loc>https://levante-framework.github.io/levantemodels/reference/remove_nonshared_items.html</loc></url>
-<url><loc>https://levante-framework.github.io/levantemodels/reference/rlevante-package.html</loc></url>
 <url><loc>https://levante-framework.github.io/levantemodels/reference/score.html</loc></url>
 <url><loc>https://levante-framework.github.io/levantemodels/reference/score_cat.html</loc></url>
 <url><loc>https://levante-framework.github.io/levantemodels/reference/score_irt.html</loc></url>

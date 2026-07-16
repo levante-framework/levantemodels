@@ -1,7 +1,7 @@
 # Recode trial correctness for scoring
 
 `recode_trials()` applies the task-specific corrections that make
-[`get_trials()`](https://levante-framework.github.io/levante-r/reference/get_trials.html)
+[`levante::get_trials()`](https://levante-framework.github.io/levante-r/reference/get_trials.html)
 output scoring-ready, and **must be applied before IRT scoring**: the
 calibrated models were fit on recoded trials, so scoring raw
 `get_trials()` output yields subtly wrong values. Corrections include

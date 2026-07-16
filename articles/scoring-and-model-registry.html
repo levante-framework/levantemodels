@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Scoring and the model registry • rlevante</title>
+<title>Scoring and the model registry • levantemodels</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
@@ -18,7 +18,7 @@
 
     <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
 
-    <a class="navbar-brand me-2" href="../index.html">rlevante</a>
+    <a class="navbar-brand me-2" href="../index.html">levantemodels</a>
 
     <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
 
@@ -70,7 +70,7 @@ tooling on top of it. This vignette covers how scores are produced, and
 how to reproduce or audit them yourself using the LEVANTE <strong>model
 registry</strong>.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">levantemodels</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://levante-framework.github.io/levantemodels/">levantemodels</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://levante-framework.github.io/levante-r/" class="external-link">levante</a></span><span class="op">)</span>   <span class="co"># data loaders: get_scores(), get_trials(), ...</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
@@ -312,7 +312,7 @@ guessing.</p>
 <p>Two things are easy to get wrong here:</p>
 <ul>
 <li>The <code>item_parameters</code> table (and
-<code><a href="https://levante-framework.github.io/levante-r/reference/get_item_parameters.html" class="external-link">levante::get_item_parameters()</a></code>) exposes only
+<code>levante::get_item_parameters()</code>) exposes only
 <code>difficulty</code> and <code>discrimination</code>; it
 <strong>omits <code>g</code></strong>. Its <code>itemtype</code> label
 (<code>rasch</code> / <code>2pl</code>) describes the discrimination
@@ -351,7 +351,7 @@ values, so it is an equivalent source for the asymptote.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

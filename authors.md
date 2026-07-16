@@ -12,12 +12,12 @@
 
 ## Citation
 
-Frank M, Braginsky M (2026). *rlevante: LEVANTE Data Processing and
+Frank M, Braginsky M (2026). *levantemodels: LEVANTE Data Processing and
 Modeling*. R package version 0.1.0,
 <https://levante-framework.github.io/levantemodels/>.
 
     @Manual{,
-      title = {rlevante: LEVANTE Data Processing and Modeling},
+      title = {levantemodels: LEVANTE Data Processing and Modeling},
       author = {Michael Frank and Mika Braginsky},
       year = {2026},
       note = {R package version 0.1.0},

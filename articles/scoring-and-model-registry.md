@@ -190,8 +190,7 @@ guessing.
 
 Two things are easy to get wrong here:
 
-- The `item_parameters` table (and
-  [`levante::get_item_parameters()`](https://levante-framework.github.io/levante-r/reference/get_item_parameters.html))
+- The `item_parameters` table (and `levante::get_item_parameters()`)
   exposes only `difficulty` and `discrimination`; it **omits `g`**. Its
   `itemtype` label (`rasch` / `2pl`) describes the discrimination
   structure only, not the presence of guessing.
