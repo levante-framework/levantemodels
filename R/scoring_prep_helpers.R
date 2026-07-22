@@ -103,10 +103,10 @@ recode_wrong_items <- \(df, wrong_items) {
   # actually present. right_join would keep unmatched wrong_items keys, adding
   # a spurious all-NA trial row when an item bank entry isn't in the data.
   wrong_trials <- df |>
-    inner_join(wrong_items) |>
+    inner_join(wrong_items, by = "item_uid") |>
     mutate(correct = !is.na(.data$response) & .data$response == .data$answer_fixed)
   df |>
-    anti_join(wrong_items) |>
+    anti_join(wrong_items, by = "item_uid") |>
     bind_rows(wrong_trials) |>
     select(-"answer_fixed")
 }
@@ -136,8 +136,9 @@ recode_sds <- function(df) {
     filter(!stringr::str_detect(.data$response, "mittel|rote|gelb|blau|gr\u00FCn")) |>
     filter(!(.data$dataset == "pilot_western_ca_main" & .data$timestamp < "2025-02-21"))
 
+  non_sds <- df |> filter_out(.data$item_task == "sds")
   # escape hatch if no valid data remains
-  if (nrow(sds_data) == 0) return(df)
+  if (nrow(sds_data) == 0) return(non_sds)
 
   # separate out non-match blocks (dimensions and same)
   sds_dimensions <- sds_data |> filter(.data$item_group == "dimensions")
@@ -156,7 +157,7 @@ recode_sds <- function(df) {
   sds_intro <- bind_rows(sds_dimensions, sds_same_coded)
 
   # figure out which responses correspond to each trial
-  sds_indexed <- sds_data |>
+  sds_match_indexed <- sds_data |>
     filter(stringr::str_detect(.data$item_group, "match")) |>
     mutate(different = stringr::str_detect(.data$item_original, "different")) |>
     group_by(.data$run_id, .data$item_group) |>
@@ -170,7 +171,7 @@ recode_sds <- function(df) {
     ungroup()
 
   # remove variously non-compliant trials
-  sds_match <- sds_indexed |>
+  sds_match <- sds_match_indexed |>
     filter(.data$trial_index != 0) |>
     # remove blocks that have any mis-indexed trials
     group_by(.data$run_id, .data$item_group) |>
@@ -185,10 +186,15 @@ recode_sds <- function(df) {
     # remove trials that don't have consistent response options for every response
     filter(n_distinct(.data$distractors) == 1) |>
     # recreate choice number
-    mutate(choice_i = 1:n()) |>
+    mutate(choice_i = seq_len(n())) |>
     ungroup() |>
     select("run_id", "trial_index", "item_group", "match_k", "choice_i", "trial_id",
            "item", resp = "response", opts = "distractors", "correct", "original_correct")
+
+  # escape hatch if no valid data remains
+  if (nrow(sds_match) == 0) {
+    if (nrow(sds_intro) == 0) return(non_sds) else return(sds_intro)
+  }
 
   # parse response and options strings into vectors of stimuli
   sds_opts <- sds_match |>
@@ -205,9 +211,6 @@ recode_sds <- function(df) {
     mutate(opts_dims = purrr::map(.data$opts_coded, match_opts_dims),
            resp_dims = purrr::map2(.data$resp_coded, .data$opts_dims, match_resp_dims)) |>
     mutate(n_matches = purrr::map_int(.data$opts_dims, sum))
-
-  # escape hatch if no valid data remains
-  if (nrow(sds_dims) == 0) return(df)
 
   # determine outcomes of each trial – was the response a match + was the response new
   sds_correct <- sds_dims |>
@@ -243,7 +246,5 @@ recode_sds <- function(df) {
     inner_join(sds_correct_itemized, by = "trial_id") |>
     bind_rows(sds_intro)
 
-  df |>
-    filter_out(.data$item_task == "sds") |>
-    bind_rows(sds_trials)
+  non_sds |> bind_rows(sds_trials)
 }
