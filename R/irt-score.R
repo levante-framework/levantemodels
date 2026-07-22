@@ -3,9 +3,10 @@
 #' @param trial_data_task trial data from one task and one dataset
 #' @param mod_spec list with entries item_task, dataset, model_set, subset, itemtype, nfact, invariance
 #' @param mod_rec ModelRecord object
+#' @param method fscores estimation method, e.g. "EAP" (default) or "ML"; see mirt::fscores()
 #' @return tibble with scores
 #' @export
-score_irt <- \(trial_data_task, mod_spec, mod_rec) {
+score_irt <- \(trial_data_task, mod_spec, mod_rec, method = "EAP") {
   message(glue::glue('--Using IRT scoring'))
 
   # prep new data for model
@@ -54,7 +55,7 @@ score_irt <- \(trial_data_task, mod_spec, mod_rec) {
   }
 
   # get scores from model
-  scores <- mirt::fscores(mod, method = "EAP", response.pattern = data_aligned)
+  scores <- mirt::fscores(mod, method = method, response.pattern = data_aligned)
 
   # return scores tibble with better names and run_ids added back in
   scores |>

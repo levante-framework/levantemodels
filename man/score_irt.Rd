@@ -4,7 +4,7 @@
 \alias{score_irt}
 \title{given trial data and model record, score data from corresponding model}
 \usage{
-score_irt(trial_data_task, mod_spec, mod_rec)
+score_irt(trial_data_task, mod_spec, mod_rec, method = "EAP")
 }
 \arguments{
 \item{trial_data_task}{trial data from one task and one dataset}
@@ -12,6 +12,8 @@ score_irt(trial_data_task, mod_spec, mod_rec)
 \item{mod_spec}{list with entries item_task, dataset, model_set, subset, itemtype, nfact, invariance}
 
 \item{mod_rec}{ModelRecord object}
+
+\item{method}{fscores estimation method, e.g. "EAP" (default) or "ML"; see mirt::fscores()}
 }
 \value{
 tibble with scores
