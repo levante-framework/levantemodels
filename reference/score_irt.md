@@ -5,7 +5,7 @@ given trial data and model record, score data from corresponding model
 ## Usage
 
 ``` r
-score_irt(trial_data_task, mod_spec, mod_rec)
+score_irt(trial_data_task, mod_spec, mod_rec, method = "EAP")
 ```
 
 ## Arguments
@@ -22,6 +22,11 @@ score_irt(trial_data_task, mod_spec, mod_rec)
 - mod_rec:
 
   ModelRecord object
+
+- method:
+
+  fscores estimation method, e.g. "EAP" (default) or "ML"; see
+  mirt::fscores()
 
 ## Value
 
