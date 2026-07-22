@@ -100,6 +100,11 @@ fit_task_models_multigroup <- \(task_data, models, priors, task, group,
 
   group <- enquo(group)
 
+  if (!(task %in% unique(task_data$item_task))) {
+    message(glue::glue("Task {task} not present in task_data"))
+    return()
+  }
+
   # filter task data to given task
   trials <- task_data |>
     filter(.data$item_task == task) |>
