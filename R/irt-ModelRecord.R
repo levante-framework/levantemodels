@@ -17,6 +17,7 @@ ModelRecord <- setClass(
     data          = "matrix",
     factors       = "character",
     nfact         = "numeric",
+    nestpars      = "numeric",
     invariance    = "character",
     items         = "character",
     runs          = "character",
@@ -45,6 +46,7 @@ modelrecord <- \(mod, row_ids) {
       data = mirt::extract.mirt(mod, "data"),
       factors = mirt::extract.mirt(mod, "factorNames"),
       nfact = mirt::extract.mirt(mod, "nfact"),
+      nestpars = mirt::extract.mirt(mod, "nestpars"),
       invariance = mirt::extract.mirt(mod, "invariance"),
       items = mirt::extract.mirt(mod, "itemnames"),
       runs = row_ids,
@@ -60,6 +62,7 @@ modelrecord <- \(mod, row_ids) {
 extract_scores <- \(mod, row_ids) {
   mirt::fscores(mod, method = "EAP", full.scores.SE = TRUE) |>
     as_tibble() |>
+    mutate(across(where(is.numeric), as.numeric)) |> # convert matrices to vectors
     rename(ability = "F1", se = "SE_F1") |>
     mutate(run_id = row_ids, .before = everything())
 }

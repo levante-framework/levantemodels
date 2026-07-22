@@ -29,3 +29,15 @@ test_that("score_irt() is invariant to the item column order of its input", {
   joined <- merge(scored_fwd, scored_rev, by = "run_id")
   expect_equal(joined$score.x, joined$score.y, tolerance = 1e-8)
 })
+
+test_that("score_irt() respects the method argument", {
+  fx <- irt_fixture_2pl()
+  scored_eap <- suppressMessages(score_irt(fx$trials, fx$spec, fx$mod_rec))
+  scored_ml  <- suppressMessages(score_irt(fx$trials, fx$spec, fx$mod_rec, method = "ML"))
+  joined <- merge(scored_eap, scored_ml, by = "run_id")
+  expect_false(isTRUE(all.equal(joined$score.x, joined$score.y)))
+  gold <- scores(fx$mod_rec)
+  joined_ml <- merge(scored_ml, gold, by = "run_id")
+  joined_ml <- joined_ml[is.finite(joined_ml$score), ]
+  expect_gt(cor(joined_ml$score, joined_ml$ability), 0.9)
+})
