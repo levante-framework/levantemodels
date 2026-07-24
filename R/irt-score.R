@@ -24,12 +24,17 @@ score_irt <- \(trial_data_task, mod_spec, mod_rec, method = "EAP") {
       return()
       # for scalar models, scoring using any group should be equivalent
     } else if (!is.na(mod_spec$invariance) & mod_spec$invariance == "scalar") {
+      # TODO: scoring from first group not actually equivalent because of group-specific means and variances, unclear how to handle
       data_group <- mod_rec@group_names[[1]]
     }
   }
 
   # subset data to items present in model
   overlap_items <- intersect(colnames(data_prepped), items(mod_rec))
+  if (length(overlap_items) == 0) {
+    message("Can't score task data from given model record (no overlapping items)")
+    stop("invalid_scoring_model")
+  }
   data_aligned <- data_prepped |> select(!!overlap_items)
   # add columns with NA values for items present in model but not in data
   missing_items <- setdiff(items(mod_rec), colnames(data_prepped))

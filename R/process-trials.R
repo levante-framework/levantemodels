@@ -38,7 +38,7 @@ process_trials_prelim <- function(dataset_spec,
   # filter to valid trials
   if (remove_invalid_trials) trials <- trials |> filter(.data$valid_trial)
 
-  trials |> remove_practice_trials()
+  trials
 }
 
 #' Process trial data
@@ -73,6 +73,7 @@ process_trials <- function(dataset_spec,
                                          participants = participants,
                                          max_results = max_results)
   trials_prelim |>
+    remove_practice_trials() |>
     add_item_ids() |>
     add_item_metadata() |>
     add_trial_numbers() |>

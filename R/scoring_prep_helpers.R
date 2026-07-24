@@ -133,8 +133,8 @@ recode_sds <- function(df) {
   # subset to SDS data and remove known brokenness
   sds_data <- df |>
     filter(.data$item_task == "sds") |>
-    filter(!stringr::str_detect(.data$response, "mittel|rote|gelb|blau|gr\u00FCn")) |>
-    filter(!(.data$dataset == "pilot_western_ca_main" & .data$timestamp < "2025-02-21"))
+    filter_out(stringr::str_detect(.data$response, "mittel|rote|gelb|blau|gr\u00FCn")) |>
+    filter_out(.data$dataset == "pilot_western_ca_main" & .data$timestamp < "2025-02-21")
 
   non_sds <- df |> filter_out(.data$item_task == "sds")
   # escape hatch if no valid data remains
@@ -143,18 +143,25 @@ recode_sds <- function(df) {
   # separate out non-match blocks (dimensions and same)
   sds_dimensions <- sds_data |> filter(.data$item_group == "dimensions")
   sds_same <- sds_data |> filter(.data$item_group == "same")
-  # code same block for match dimension
-  sds_same_items <- sds_same |>
-    distinct(.data$answer, .data$distractors) |>
-    mutate(opts_parsed = .data$distractors |> purrr::map(parse_response) |> purrr::map(sort)) |>
-    mutate(opts_dims = .data$opts_parsed |> purrr::map(code_dims) |> purrr::map(same_dim)) |>
-    filter(purrr::map(.data$opts_dims, length) == 1) |>
-    mutate(dims = unlist(.data$opts_dims)) |>
-    mutate(item_uid = glue::glue("sds_same_{dims}")) |>
-    select("answer", "distractors", "item_uid")
-  sds_same_coded <- sds_same |> select(-"item_uid") |>
-    inner_join(sds_same_items, by = c("answer", "distractors"))
+  # some datasets have no "same" test trials
+  if (nrow(sds_same) == 0) {
+    sds_same_coded <- tibble()
+  } else {
+    # code same block for match dimension
+    sds_same_items <- sds_same |>
+      distinct(.data$answer, .data$distractors) |>
+      mutate(opts_parsed = .data$distractors |> purrr::map(parse_response) |> purrr::map(sort)) |>
+      mutate(opts_dims = .data$opts_parsed |> purrr::map(code_dims) |> purrr::map(same_dim)) |>
+      filter(purrr::map(.data$opts_dims, length) == 1) |>
+      mutate(dims = unlist(.data$opts_dims)) |>
+      mutate(item_uid = glue::glue("sds_same_{dims}")) |>
+      select("answer", "distractors", "item_uid")
+    sds_same_coded <- sds_same |> select(-"item_uid") |>
+      inner_join(sds_same_items, by = c("answer", "distractors"))
+  }
   sds_intro <- bind_rows(sds_dimensions, sds_same_coded)
+
+  non_match <- non_sds |> bind_rows(sds_intro)
 
   # figure out which responses correspond to each trial
   sds_match_indexed <- sds_data |>
@@ -192,9 +199,7 @@ recode_sds <- function(df) {
            "item", resp = "response", opts = "distractors", "correct", "original_correct")
 
   # escape hatch if no valid data remains
-  if (nrow(sds_match) == 0) {
-    if (nrow(sds_intro) == 0) return(non_sds) else return(sds_intro)
-  }
+  if (nrow(sds_match) == 0) return(non_match)
 
   # parse response and options strings into vectors of stimuli
   sds_opts <- sds_match |>
@@ -243,8 +248,7 @@ recode_sds <- function(df) {
   # add back in intro trials
   sds_trials <- sds_data |>
     select(-c("correct", "item_uid", "chance")) |>
-    inner_join(sds_correct_itemized, by = "trial_id") |>
-    bind_rows(sds_intro)
+    inner_join(sds_correct_itemized, by = "trial_id")
 
-  non_sds |> bind_rows(sds_trials)
+  non_match |> bind_rows(sds_trials)
 }
