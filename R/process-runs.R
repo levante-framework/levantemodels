@@ -64,10 +64,12 @@ process_runs <- function(dataset_spec,
     "KNaxHVqdpe2CtS9NLoX8", "de-DE",
     "LTQ0EQ4pvI4FAkjY98Pq", "de-DE",
     "zlOE3yc4n4JimAhGtQ6r", "de-DE",
+    "bZjwnLQ4awf0NRA1ZHi8", "de-DE",
 
     "1Y3K5lAs6yocDwkHH5aT", "es-CO",
     "OYKVpWxFYhA9Qh9w58Qy", "es-CO",
     "oD16mNDBnKwPnK7lvaCA", "es-CO",
+    "DWTiUJXyw6XfKGiQlIMy", "es-CO",
 
     "3fFvykenyEYGlAsRfYiJ", "en-US",
     "5qBz8FFYIsuoYkuGXwVd", "en-US",
@@ -82,6 +84,8 @@ process_runs <- function(dataset_spec,
     "zlOE3yc4n4JimAhGtQ6r",  FALSE,     # TODO: confirm non-adaptive
     "rq7PRMzgtkw52HMfxvNW",  FALSE,     # TODO: confirm non-adaptive
     "8NLzzprrkwJPeY18iRRH",  FALSE,     # TODO: confirm non-adaptive
+    "bZjwnLQ4awf0NRA1ZHi8",   TRUE,
+    "DWTiUJXyw6XfKGiQlIMy",   TRUE
   )
 
   runs |>
