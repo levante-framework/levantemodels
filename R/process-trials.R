@@ -108,11 +108,11 @@ add_trial_numbers <- function(trials) {
     ungroup()
 }
 
-add_item_ids <- function(trials) {
+add_item_ids <- function(trials, metadata_version = "current") {
 
   # get item UIDs coded by trial
   # trial_items <- fetch_trial_items()
-  mapping_trial <- fetch_item_mapping_trial()
+  mapping_trial <- fetch_item_mapping_trial(version = metadata_version)
   trial_map <- mapping_trial |>
     mutate(trials = trials |> purrr::map(jsonlite::fromJSON) |> purrr::map(unlist)) |>
     tidyr::unnest(trials) |>
@@ -120,7 +120,7 @@ add_item_ids <- function(trials) {
 
   # get item UIDs coded by item (corpus_trial_type, item, answer, distractors)
   # mapping_items <- fetch_mapping_items()
-  mapping_fields <- fetch_item_mapping_fields()
+  mapping_fields <- fetch_item_mapping_fields(version = metadata_version)
   item_map <- mapping_fields |>
     mutate(across(c("corpus_trial_type", "item", "answer", "distractors"),
                   \(s) tidyr::replace_na(s, ""))) |>
@@ -132,18 +132,18 @@ add_item_ids <- function(trials) {
 
   # get item UIDs coded by item_id
   # mapping_items <- fetch_mapping_items()
-  mapping_id <- fetch_item_mapping_id()
+  mapping_id <- fetch_item_mapping_id(version = metadata_version)
   id_map <- mapping_id |>
     select(item_uid_id = "item_uid", "item_id")
 
   # fixes for wrong item UIDs in item banks
   itembank_recodes <- c(
-    "sds_same_same"              = "sds_same_",
-    "math_compare_65_67"         = "math_compare_67_65",
-    "math_compare_27_36"         = "math_compare_36_27",
-    "math_compare_390_435"       = "math_compare_435_390",
-    "math_compare_69_82"         = "math_compare_82_69",
-    "math_compare_823_861"       = "math_compare_861_823",
+    "sds_same_same"            = "sds_same_",
+    "math_compare_65_67"       = "math_compare_67_65",
+    "math_compare_27_36"       = "math_compare_36_27",
+    "math_compare_390_435"     = "math_compare_435_390",
+    "math_compare_69_82"       = "math_compare_82_69",
+    "math_compare_823_861"     = "math_compare_861_823",
     "math_fraction_12_13_16"   = "math_fraction_12_13",
     "math_fraction_12_14_34"   = "math_fraction_12_14",
     "math_fraction_13_17_421"  = "math_fraction_13_17",
@@ -182,7 +182,7 @@ add_item_ids <- function(trials) {
         stringr::str_detect(task_id, "^pa(-|$)") ~ glue::glue("pa_{stringr::str_to_lower(subtask)}_{answer}"),
         stringr::str_detect(task_id, "^sre(-|$)") ~ glue::glue("sre_{item_id}"),
         stringr::str_detect(task_id, "^swr(-|$)") ~ glue::glue("swr_{answer}"),
-      ) |> as.character()) |>
+      ) |> as.character() |> stringr::str_replace_all("-", "_")) |>
       # fix wrong item IDs in item banks
       mutate(item_uid = .data$item_uid |>
                stringr::str_replace("^mrot_3d_.*?_", "mrot_3d_shape_") |>
@@ -194,10 +194,13 @@ add_item_ids <- function(trials) {
                stringr::str_replace("^vocab__", "vocab_word_") |>
                forcats::fct_recode(!!!itembank_recodes) |>
                as.character() |>
+               na_if("_") |>
                na_if("math_fraction_512_16") |>
                na_if("mg_forward_3grid_len2")) |>
       # remove stray SDS instructions and something-same trials (not actually test trials)
-      filter(is.na(.data$item_uid) | !stringr::str_detect(.data$item_uid, "-instr")) |>
+      # filter(is.na(.data$item_uid) | !stringr::str_detect(.data$item_uid, "-instr")) |>
+      filter_out(stringr::str_detect(.data$item_uid, "-instr") |
+                   stringr::str_detect(.data$item_id, "-instr")) |>
       filter_out(.data$corpus_trial_type == "something-same-1") |>
       # recode memory-game answers
       mutate(answer_sub = if_else(.data$task_id == "memory-game",
@@ -248,8 +251,8 @@ add_item_ids <- function(trials) {
 }
 
 
-add_item_metadata <- function(trials) {
-  corpus_items <- fetch_corpus_items() |> distinct()
+add_item_metadata <- function(trials, metadata_version = "current") {
+  corpus_items <- fetch_corpus_items(version = metadata_version) |> distinct()
   trials |>
     filter(!is.na(.data$item_uid)) |>
     left_join(corpus_items, by = "item_uid") |>
@@ -259,6 +262,8 @@ add_item_metadata <- function(trials) {
       stringr::str_extract(.data$task_id, "^[A-z]*"),
       .data$item_task
     )) |>
+    # code chance for roar tasks
+    mutate(chance = if_else(.data$item_task %in% c("swr", "sre"), 0.5, chance)) |>
     mutate(group = tidyr::replace_na(.data$group, ""),
            entry = tidyr::replace_na(.data$entry, "")) |>
     rename(item_original = "item", item_group = "group", item = "entry")

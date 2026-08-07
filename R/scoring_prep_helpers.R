@@ -48,6 +48,7 @@ recode_trials <- \(df, slider_threshold = 0.15) {
 #'
 #' @inheritParams recode_trials
 recode_hf <- \(df) {
+  message("Recoding hearts and flowers trials")
   hf_trials <- df |>
     filter(.data$item_task == "hf") |>
     # code too fast/slow RTs as incorrect
@@ -63,7 +64,7 @@ recode_hf <- \(df) {
       .data$item != lag(.data$item) ~ "switch")) |>
     ungroup() |>
     mutate(item = paste(.data$item, .data$hf_type, sep = "_"),
-           item_uid = paste(.data$item_group, .data$item, sep = "_")) |>
+           item_uid = paste("hf", .data$item_group, .data$item, sep = "_")) |>
     # filter(hf_type != "start") |>
     select(-"hf_type")
 
@@ -76,6 +77,7 @@ recode_hf <- \(df) {
 #'
 #' @inheritParams recode_trials
 recode_slider <- \(df, slider_threshold) {
+  message("Recoding math slider trials")
   slider_trials <- df |>
     filter(.data$item_group == "slider") |>
     # get target and max values out of item
@@ -115,6 +117,7 @@ recode_wrong_items <- \(df, wrong_items) {
 #'
 #' @inheritParams recode_trials
 recode_tom <- \(df) {
+  message("Recoding theory of mind trials")
   tom <- df |> filter(.data$item_task == "tom")
   tom_disagg <- tom |>
     mutate(story = stringr::str_extract(.data$item_original, "^[0-9]+"),
@@ -130,6 +133,7 @@ recode_tom <- \(df) {
 #' @inheritParams recode_trials
 recode_sds <- function(df) {
 
+  message("Recoding same different selection trials")
   # subset to SDS data and remove known brokenness
   sds_data <- df |>
     filter(.data$item_task == "sds") |>
@@ -241,7 +245,7 @@ recode_sds <- function(df) {
     mutate(item_choice = paste0("choice", .data$choice_i),
            item_status = paste0(.data$prev_matches, "m", .data$prev_nonmatches, "n"),
            item_uid = glue::glue("sds_{item_group}_{item_choice}_{item_status}") |> as.character(),
-           chance = 0) |>
+           chance = 0) |> # analyses revealed guessing floors hurt SDS models
     select("trial_id", "correct", "item_uid", "chance")
 
   # substitute recoded item_uid + correct + chance
