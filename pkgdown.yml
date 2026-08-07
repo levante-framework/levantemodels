@@ -3,7 +3,7 @@ pkgdown: 2.2.1
 pkgdown_sha: ~
 articles:
   scoring-and-model-registry: scoring-and-model-registry.html
-last_built: 2026-08-07T20:43Z
+last_built: 2026-08-07T21:28Z
 urls:
   reference: https://levante-framework.github.io/levantemodels/reference
   article: https://levante-framework.github.io/levantemodels/articles
