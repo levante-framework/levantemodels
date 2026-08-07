@@ -117,11 +117,12 @@ score_sre <- \(trial_data_task, dataset) {
 
   trial_data_task |>
     group_by(.data$dataset, .data$run_id) |>
-    summarise(elapsed = sum(.data$rt_numeric, na.rm = TRUE) / 1000,
-              net = sum(.data$correct) - sum(!.data$correct)) |>
+    summarise(elapsed = difftime(max(timestamp), min(timestamp), units = "sec"),
+              net = sum(.data$correct) - sum(!.data$correct),
+              score = .data$net / as.numeric(.data$elapsed)) |>
     filter(.data$elapsed >= 30) |>
     group_by(.data$dataset) |>
-    mutate(score = scale(.data$net / .data$elapsed * 180)[, 1],
+    mutate(score = scale(score)[, 1],
            score_type = "guessing_adjusted_rate_scaled") |>
     select(-"elapsed", -"net")
 }
