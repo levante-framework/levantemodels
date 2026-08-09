@@ -4,7 +4,7 @@
 \alias{fetch_survey_items}
 \title{Get metadata for survey items}
 \usage{
-fetch_survey_items()
+fetch_survey_items(version = "current")
 }
 \description{
 Get metadata for survey items

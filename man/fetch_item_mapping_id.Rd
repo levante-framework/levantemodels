@@ -4,7 +4,7 @@
 \alias{fetch_item_mapping_id}
 \title{Get item UIDs mapped by item_id}
 \usage{
-fetch_item_mapping_id()
+fetch_item_mapping_id(version = "current")
 }
 \description{
 Get item UIDs mapped by item_id

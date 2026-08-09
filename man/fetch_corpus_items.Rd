@@ -4,7 +4,7 @@
 \alias{fetch_corpus_items}
 \title{Get metadata for corpus items}
 \usage{
-fetch_corpus_items()
+fetch_corpus_items(version = "current")
 }
 \description{
 Get metadata for corpus items

@@ -4,7 +4,10 @@
 \alias{fetch_item_mapping_trial}
 \title{Get item UIDs mapped by trial_id}
 \usage{
-fetch_item_mapping_trial()
+fetch_item_mapping_trial(version = "current")
+}
+\arguments{
+\item{version}{Redivis version tag of the \code{levante_metadata_items} dataset}
 }
 \description{
 Get item UIDs mapped by trial_id
