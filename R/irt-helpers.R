@@ -34,7 +34,7 @@ remove_nonshared_items <- function(df) {
     group_by(.data$item_uid) |>
     mutate(n_groups = n_distinct(.data$group)) |>
     ungroup() |>
-    filter(.data$n_groups == n_groups_total) # need to be in N or more groups
+    filter(.data$n_groups == n_groups_total) # need to be in all groups
 }
 
 #' remove items with no invariance in any single group
@@ -46,7 +46,9 @@ remove_no_var_items_bygroup <- function(df) {
     group_by(.data$item_inst, .data$group) |>
     mutate(n_cat_group = n_distinct(.data$correct)) |>
     group_by(.data$item_inst) |>
-    filter(n_distinct(.data$n_cat_group) == 1) |>
+    # all groups need to have more than one response category AND
+    # the number of response categories needs to be the same for all groups
+    filter(all(.data$n_cat_group > 1), n_distinct(.data$n_cat_group) == 1) |>
     ungroup()
 }
 
