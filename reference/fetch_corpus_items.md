@@ -5,7 +5,7 @@ Get metadata for corpus items
 ## Usage
 
 ``` r
-fetch_corpus_items()
+fetch_corpus_items(version = "current")
 ```
 
 ## Examples

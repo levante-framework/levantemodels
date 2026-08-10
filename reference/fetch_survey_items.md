@@ -5,7 +5,7 @@ Get metadata for survey items
 ## Usage
 
 ``` r
-fetch_survey_items()
+fetch_survey_items(version = "current")
 ```
 
 ## Examples

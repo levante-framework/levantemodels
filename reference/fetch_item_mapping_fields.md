@@ -5,7 +5,7 @@ Get item UIDs mapped by fields
 ## Usage
 
 ``` r
-fetch_item_mapping_fields()
+fetch_item_mapping_fields(version = "current")
 ```
 
 ## Examples
