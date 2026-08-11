@@ -119,12 +119,15 @@ score_sre <- \(trial_data_task, dataset) {
     group_by(.data$dataset, .data$run_id) |>
     summarise(elapsed = difftime(max(timestamp), min(timestamp), units = "sec"),
               net = sum(.data$correct) - sum(!.data$correct),
-              score = .data$net / as.numeric(.data$elapsed)) |>
+              score = .data$net / as.numeric(.data$elapsed),
+              .groups = "drop") |>
     filter(.data$elapsed >= 30) |>
     group_by(.data$dataset) |>
     mutate(score = scale(score)[, 1],
            score_type = "guessing_adjusted_rate_scaled") |>
-    select(-"elapsed", -"net")
+    ungroup() |>
+    select("run_id", "score", "score_type")
+    # select(-"elapsed", -"net")
 }
 
 mod_spec_str <- \(spec) {
