@@ -17,15 +17,24 @@ score_irt <- \(trial_data_task, mod_spec, mod_rec, method = "EAP") {
   data_group <- unique(groups)
 
   # handle data having groups that aren't in model
+  new_group <- FALSE
   if (any(!(data_group %in% mod_rec@group_names))) {
     # for metric or configural models, scoring not possible
     if (!is.na(mod_spec$invariance) & mod_spec$invariance %in% c("metric", "configural")) {
       message(glue::glue("For scoring with {mod_spec$invariance} models, all groups in data must be in specified model."))
       return()
-      # for scalar models, scoring using any group should be equivalent
+      # for scalar models, item parameters are shared across groups, but each
+      # group has its own mean and variance, so score the data as its own group
     } else if (!is.na(mod_spec$invariance) & mod_spec$invariance == "scalar") {
-      # TODO: scoring from first group not actually equivalent because of group-specific means and variances, unclear how to handle
-      data_group <- mod_rec@group_names[[1]]
+      # a group's variance can't be estimated from only a few runs (it
+      # collapses toward zero), so small groups are scored from the first group
+      min_group_runs <- 25
+      if (nrow(data_prepped) >= min_group_runs) {
+        new_group <- TRUE
+      } else {
+        message(glue::glue("--Fewer than {min_group_runs} runs for group not in model, scoring using group {mod_rec@group_names[[1]]}"))
+        data_group <- mod_rec@group_names[[1]]
+      }
     }
   }
 
@@ -52,6 +61,9 @@ score_irt <- \(trial_data_task, mod_spec, mod_rec, method = "EAP") {
   if (model_class(mod_rec) == "SingleGroupClass") {
     # reconstruct single group model
     mod <- mirt::mirt(data = mod_rec@data, pars = mod_vals, TOL = NaN)
+  } else if (model_class(mod_rec) == "MultipleGroupClass" && new_group) {
+    # data's group not in model: score under its own estimated mean and variance
+    mod <- new_group_model(mod_rec, data_aligned, data_group)
   } else if (model_class(mod_rec) == "MultipleGroupClass") {
     # reconstruct multiple group model
     mod_recon <- mirt::multipleGroup(data = mod_rec@data, group = mod_rec@groups, pars = mod_vals, TOL = NaN)
@@ -70,6 +82,48 @@ score_irt <- \(trial_data_task, mod_spec, mod_rec, method = "EAP") {
     mutate(run_id = rownames(data_prepped), .before = everything()) |>
     mutate(score_type = "ability", scoring_model = mod_spec_str(mod_spec),
            registry_version = stringr::str_extract(mod_spec$redivis_source, "(?<=:)[^:]*$"))
+}
+
+#' single group model for a group not in a scalar multigroup model
+#'
+#' Estimates the new group's mean and variance by refitting the model on the
+#' calibration data plus the new group's data with every item parameter and
+#' every existing group's mean and variance fixed at their calibrated values
+#' (the new group shares the reference group's item parameters). Returns a
+#' single group model with the shared item parameters and the new group's
+#' estimated mean and variance, for scoring.
+#'
+#' @param mod_rec ModelRecord object for a scalar multigroup model
+#' @param data_new response matrix for the new group, columns in items(mod_rec) order
+#' @param group name of the new group
+#' @return mirt SingleGroupClass model
+#' @keywords internal
+new_group_model <- \(mod_rec, data_new, group) {
+  stopifnot(length(group) == 1, identical(colnames(data_new), colnames(mod_rec@data)))
+  message(glue::glue("--Group {group} not in model, estimating its mean and variance"))
+  data_all <- rbind(mod_rec@data, as.matrix(data_new))
+  groups_all <- c(mod_rec@groups, rep(group, nrow(data_new)))
+
+  # parameter table for the combined data, filled with calibrated values
+  vals <- mirt::multipleGroup(data = data_all, group = groups_all, pars = "values")
+  mod_vals <- model_vals(mod_rec)
+  source_group <- ifelse(vals$group == group, mod_rec@group_names[[1]], vals$group)
+  val_match <- match(paste(source_group, vals$item, vals$name),
+                     paste(mod_vals$group, mod_vals$item, mod_vals$name))
+  stopifnot(!anyNA(val_match))
+  vals$value <- mod_vals$value[val_match]
+
+  # estimate only the new group's mean and variance
+  vals$est <- vals$group == group & vals$name %in% c("MEAN_1", "COV_11")
+  mod_new <- mirt::multipleGroup(data = data_all, group = groups_all, pars = vals, verbose = FALSE)
+  group_pars <- mirt::coef(mod_new, simplify = TRUE)[[group]]
+
+  # reference group's single group model with the new group's mean and variance
+  # (not extract.group() on the new group, which fails for a one-run group)
+  ref_vals <- mirt::mod2values(mirt::extract.group(mod_new, group = mod_rec@group_names[[1]]))
+  ref_vals$value[ref_vals$name == "MEAN_1"] <- group_pars$means[1]
+  ref_vals$value[ref_vals$name == "COV_11"] <- group_pars$cov[1, 1]
+  mirt::mirt(data = mod_rec@data, pars = ref_vals, TOL = NaN)
 }
 
 #' scores from CAT
