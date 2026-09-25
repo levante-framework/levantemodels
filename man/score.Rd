@@ -4,7 +4,15 @@
 \alias{score}
 \title{score}
 \usage{
-score(task, dataset, trials, runs, scoring_table, registry_dir)
+score(
+  task,
+  dataset,
+  trials,
+  runs,
+  scoring_table,
+  registry_dir,
+  exclusions = NULL
+)
 }
 \arguments{
 \item{task}{task}
@@ -18,6 +26,9 @@ score(task, dataset, trials, runs, scoring_table, registry_dir)
 \item{scoring_table}{tibble returned by fetch_scoring_table()}
 
 \item{registry_dir}{redivis directory returned by fetch_registry_dir()}
+
+\item{exclusions}{optional exclusion table (e.g. from fetch_exclusions()),
+applied to trials with apply_exclusions() before scoring}
 }
 \description{
 score
