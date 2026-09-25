@@ -37,50 +37,42 @@ test_that("score_irt() falls back to a model group for scalar models", {
   expect_equal(nrow(scored), length(fx$run_ids))
 })
 
-test_that("score_irt() scores a group not in a scalar multigroup model under its own estimated prior", {
+test_that("score_irt() scores a group not in a scalar multigroup model under the pooled prior", {
   fx <- irt_fixture_multigroup()
-  g2_trials <- subset(fx$trials, dataset == "g2")
-  gold <- merge(g2_trials[!duplicated(g2_trials$run_id), "run_id", drop = FALSE],
-                scores(fx$mod_rec), by = "run_id")
+  new_trials <- transform(subset(fx$trials, dataset == "g2"), dataset = "g_new")
+  scored <- suppressMessages(score_irt(new_trials, fx$spec, fx$mod_rec))
 
-  # g2's calibration data relabelled as a group the model doesn't have:
-  # re-estimating its mean and variance with items fixed recovers g2's
-  # calibrated distribution, so its stored EAP scores are reproduced
-  new_trials <- transform(g2_trials, dataset = "g_new")
-  scored_new <- suppressMessages(score_irt(new_trials, fx$spec, fx$mod_rec))
-  joined_new <- merge(scored_new, gold, by = "run_id")
-  expect_equal(nrow(joined_new), sum(fx$groups == "g2"))
-  expect_equal(joined_new$score, joined_new$ability, tolerance = 0.01)
+  # independent EAP by quadrature under the mixture of the two groups' priors
+  vals <- model_vals(fx$mod_rec)
+  par <- \(grp, name) vals$value[vals$group == grp & vals$name == name]
+  m <- c(par("g1", "MEAN_1"), par("g2", "MEAN_1"))
+  v <- c(par("g1", "COV_11"), par("g2", "COV_11"))
+  w <- as.numeric(table(fx$groups)[c("g1", "g2")]) / length(fx$groups)
+  pooled_mean <- sum(w * m)
+  pooled_var <- sum(w * v) + sum(w * (m - pooled_mean)^2)
+  a <- par("g1", "a1")
+  d <- par("g1", "d")
+  theta <- seq(-8, 8, length.out = 401)
+  resp <- fx$resp[fx$groups == "g2", , drop = FALSE]
+  eap <- apply(resp, 1, \(x) {
+    lik <- vapply(theta, \(t) prod(ifelse(x == 1, plogis(a * t + d), 1 - plogis(a * t + d))), numeric(1))
+    post <- lik * dnorm(theta, pooled_mean, sqrt(pooled_var))
+    sum(theta * post) / sum(post)
+  })
+  expected <- data.frame(run_id = fx$run_ids[fx$groups == "g2"], expected = eap)
 
-  # the same data scored under the first group's prior (the old fallback) is
-  # further from g2's calibration scores
-  g1_prior_trials <- transform(g2_trials, dataset = "g1")
-  scored_g1 <- suppressMessages(score_irt(g1_prior_trials, fx$spec, fx$mod_rec))
-  joined_g1 <- merge(scored_g1, gold, by = "run_id")
-  expect_lt(mean(abs(joined_new$score - joined_new$ability)),
-            mean(abs(joined_g1$score - joined_g1$ability)))
+  joined <- merge(scored, expected, by = "run_id")
+  expect_equal(nrow(joined), sum(fx$groups == "g2"))
+  expect_equal(joined$score, joined$expected, tolerance = 0.01)
 })
 
-test_that("score_irt() scores a small group not in a scalar multigroup model using the first group", {
+test_that("score_irt() scores a single run from a group not in a scalar multigroup model", {
   fx <- irt_fixture_multigroup()
-  g2_trials <- subset(fx$trials, dataset == "g2")
-  few_runs <- unique(g2_trials$run_id)[1:10]
-  few_trials <- subset(g2_trials, run_id %in% few_runs)
+  one_run <- subset(fx$trials, run_id == fx$run_ids[fx$groups == "g2"][1])
+  scored <- suppressMessages(score_irt(transform(one_run, dataset = "g_new"), fx$spec, fx$mod_rec))
 
-  scored_new <- suppressMessages(score_irt(transform(few_trials, dataset = "g_new"), fx$spec, fx$mod_rec))
-  scored_g1 <- suppressMessages(score_irt(transform(few_trials, dataset = "g1"), fx$spec, fx$mod_rec))
-
-  expect_equal(scored_new$score, scored_g1$score)
-  # including a single run
-  one_run <- subset(few_trials, run_id == few_runs[1])
-  scored_one <- suppressMessages(score_irt(transform(one_run, dataset = "g_new"), fx$spec, fx$mod_rec))
-  expect_equal(nrow(scored_one), 1)
-  expect_true(is.finite(scored_one$score))
-
-  # the new group model itself can be built from a single run
-  one_resp <- fx$resp[fx$groups == "g2", , drop = FALSE][1, , drop = FALSE]
-  mod_one <- suppressMessages(new_group_model(fx$mod_rec, one_resp, "g_new"))
-  expect_s4_class(mod_one, "SingleGroupClass")
+  expect_equal(nrow(scored), 1)
+  expect_true(is.finite(scored$score))
 })
 
 test_that("score_irt() returns NULL for metric/configural models with an unknown group", {
