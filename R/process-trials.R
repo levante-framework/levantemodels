@@ -247,12 +247,78 @@ add_item_ids <- function(trials, metadata_version = "current") {
   # join mapped trials back into overall trials
   trials_prepped |>
     select(-"item_uid") |>
-    left_join(trials_mapped, by = c("task_id", "trial_id"))
+    left_join(trials_mapped, by = c("task_id", "trial_id")) |>
+    fix_tom_item_uids()
+}
+
+# fixes for ToM trials logged or retro-mapped under wrong (or no) item UIDs,
+# scoped by epoch (trial timestamp) and content (item code + answer): the nth
+# trial in a run with a given item code and answer gets the nth UID, since
+# questions with identical content differ only in their order (so runs must
+# still have all their trials, e.g. not filtered to valid trials)
+fix_tom_item_uids <- \(trials) {
+  tom_uid_fixes <- tribble(
+    ~start,       ~end,         ~item,     ~answer,       ~occurrence, ~item_uid_fixed,
+    # item-bank corpus with a wrong item_uid column (core-tasks 1.0.9 to 1.1.1)
+    "2025-05-09", "2026-05-01", "2d",      "shelf",       1, "tom_moral_reasoning_false_belief_1",
+    "2025-05-09", "2026-05-01", "2f_new2", "no",          1, "tom_moral_reasoning_false_belief_2",
+    "2025-05-09", "2026-05-01", "2f_new2", "no",          2, "tom_moral_reasoning_false_belief_3",
+    "2025-05-09", "2026-05-01", "2g",      "shelf",       1, "tom_moral_reasoning_reality_check_1",
+    "2025-05-09", "2026-05-01", "2f_new2", "coats",       1, "tom_moral_reasoning_reality_check_2",
+    "2025-05-09", "2026-05-01", "3d",      "behind-tree", 1, "tom_interpretation_false_belief",
+    "2025-05-09", "2026-05-01", "3e",      "proud",       1, "tom_interpretation_emotion_reasoning",
+    "2025-05-09", "2026-05-01", "6d_new2", "no",          1, "tom_second_order_false_belief_3",
+    "2025-05-09", "2026-05-01", "6d_new2", "shirts",      1, "tom_second_order_false_belief_4",
+    "2025-05-09", "2026-05-01", "6d_new2", "shoes",       1, "tom_second_order_false_belief_5",
+    # first corpus version (Bogota, May-June 2024), retro-mapped with repeats or not at all
+    "2024-05-01", "2024-07-01", "2e",      "no",          1, "tom_moral_reasoning_false_belief_2",
+    "2024-05-01", "2024-07-01", "2e",      "no",          2, "tom_moral_reasoning_false_belief_3",
+    "2024-05-01", "2024-07-01", "3d",      "fountain",    1, "tom_interpretation_reality_check_1",
+    "2024-05-01", "2024-07-01", "3d",      "fountain",    2, "tom_interpretation_reality_check_2",
+    "2024-05-01", "2024-07-01", "4c",      "no",          1, "tom_deception_false_belief_1",
+    "2024-05-01", "2024-07-01", "4c",      "no",          2, "tom_deception_false_belief_2",
+    "2024-05-01", "2024-07-01", "4c",      "no",          3, "tom_deception_false_belief_3",
+    "2024-05-01", "2024-07-01", "4d",      "yes",         1, "tom_deception_reality_check_2",
+    "2024-05-01", "2024-07-01", "4d",      "yes",         2, "tom_deception_reality_check_3",
+    "2024-05-01", "2024-07-01", "6c",      "no",          1, "tom_second_order_false_belief_1",
+    "2024-05-01", "2024-07-01", "6c",      "shoes",       1, "tom_second_order_false_belief_2",
+    "2024-05-01", "2024-07-01", "6d",      "no",          1, "tom_second_order_false_belief_3",
+    "2024-05-01", "2024-07-01", "6d",      "shoes",       1, "tom_second_order_false_belief_5",
+    # CO retest-A corpus (March 2025), retro-mapped with a repeat
+    "2025-03-01", "2025-04-01", "8g",      "no",          1, "tom_moral_reasoning_false_belief_2",
+    "2025-03-01", "2025-04-01", "8g",      "no",          2, "tom_moral_reasoning_false_belief_3"
+  )
+
+  fixes <- trials |>
+    filter(.data$task_id == "theory-of-mind") |>
+    distinct(.data$trial_id, .data$run_id, .data$item, .data$answer, .data$server_timestamp) |>
+    group_by(.data$run_id, .data$item, .data$answer) |>
+    arrange(.data$server_timestamp, .by_group = TRUE) |>
+    mutate(occurrence = row_number()) |>
+    ungroup() |>
+    inner_join(tom_uid_fixes, by = c("item", "answer", "occurrence")) |>
+    filter(.data$server_timestamp >= .data$start, .data$server_timestamp < .data$end) |>
+    select("trial_id", "item_uid_fixed")
+
+  trials |>
+    left_join(fixes, by = "trial_id") |>
+    mutate(item_uid = coalesce(.data$item_uid_fixed, .data$item_uid)) |>
+    select(-"item_uid_fixed")
 }
 
 
 add_item_metadata <- function(trials, metadata_version = "current") {
   corpus_items <- fetch_corpus_items(version = metadata_version) |> distinct()
+
+  # ToM yes/no questions whose generic UID is 3AFC in other stories
+  # (corpus_items has one chance value per generic UID)
+  tom_chance_fixes <- tribble(
+    ~story, ~item_uid,                         ~chance_fixed,
+    "6",    "tom_second_order_false_belief_3", 0.5,
+    "12",   "tom_second_order_false_belief_2", 0.5,
+    "18",   "tom_second_order_false_belief_2", 0.5
+  )
+
   trials |>
     filter(!is.na(.data$item_uid)) |>
     left_join(corpus_items, by = "item_uid") |>
@@ -264,6 +330,11 @@ add_item_metadata <- function(trials, metadata_version = "current") {
     )) |>
     # code chance for roar tasks
     mutate(chance = if_else(.data$item_task %in% c("swr", "sre"), 0.5, chance)) |>
+    # code chance for ToM by story (one value per story question, as IRT fits need)
+    mutate(story = stringr::str_extract(.data$item, "^[0-9]+")) |>
+    left_join(tom_chance_fixes, by = c("story", "item_uid")) |>
+    mutate(chance = coalesce(.data$chance_fixed, .data$chance)) |>
+    select(-"story", -"chance_fixed") |>
     mutate(group = tidyr::replace_na(.data$group, ""),
            entry = tidyr::replace_na(.data$entry, "")) |>
     rename(item_original = "item", item_group = "group", item = "entry")
