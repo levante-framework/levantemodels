@@ -16,41 +16,36 @@ test_that("score_cat() drops runs without a theta estimate and renames", {
   expect_true(all(out$score_type == "ability_cat"))
 })
 
-# test_that("score_sre() scores within a 180-trial cap and z-scales", {
-#   trials <- tibble(
-#     run_id = rep(c("hi", "lo"), each = 4),
-#     trial_number = rep(1:4, 2),
-#     # "hi" gets all correct, "lo" gets all incorrect
-#     correct = c(rep(TRUE, 4), rep(FALSE, 4))
-#   )
-#
-#   out <- suppressMessages(score_sre(trials, dataset = "any")) |> arrange(run_id)
-#
-#   # z-scaled across two runs -> mean 0, and "hi" > "lo"
-#   expect_equal(mean(out$score), 0, tolerance = 1e-8)
-#   expect_gt(out$score[out$run_id == "hi"], out$score[out$run_id == "lo"])
-#   expect_true(all(out$score_type == "guessing_adjusted_number_correct_scaled"))
-# })
-#
-# test_that("score_sre() ignores trials beyond number 180", {
-#   # two runs with distinct within-cap scores (so the z-scaling is defined)
-#   base <- tibble(
-#     run_id = c("a", "a", "b", "b"),
-#     trial_number = c(1, 2, 1, 2),
-#     correct = c(TRUE, TRUE, TRUE, FALSE)
-#   )
-#   # same data plus trials beyond the 180 cap, which should be ignored
-#   extra <- bind_rows(base, tibble(
-#     run_id = c("a", "b"),
-#     trial_number = c(181, 181),
-#     correct = c(FALSE, TRUE)
-#   ))
-#
-#   out_base <- suppressMessages(score_sre(base, dataset = "any")) |> arrange(run_id)
-#   out_extra <- suppressMessages(score_sre(extra, dataset = "any")) |> arrange(run_id)
-#
-#   expect_equal(out_extra$score, out_base$score)
-# })
+test_that("score_sre() z-scales the guessing-adjusted rate within dataset", {
+  # 4 trials spanning 40 seconds per run: "hi" all correct, "lo" all incorrect
+  trials <- tibble(
+    run_id = rep(c("hi", "lo"), each = 4),
+    dataset = "any",
+    timestamp = rep(as.POSIXct("2025-03-01 12:00:00") + c(0, 10, 20, 40), 2),
+    correct = c(rep(TRUE, 4), rep(FALSE, 4))
+  )
+
+  out <- suppressMessages(score_sre(trials, dataset = "any"))
+
+  # z-scaled across two runs -> mean 0, and "hi" > "lo"
+  expect_equal(mean(out$score), 0, tolerance = 1e-8)
+  expect_gt(out$score[out$run_id == "hi"], out$score[out$run_id == "lo"])
+  expect_true(all(out$score_type == "guessing_adjusted_rate_scaled"))
+})
+
+test_that("score_sre() drops runs shorter than 30 seconds", {
+  # "a" and "b" span 40 seconds with distinct net scores; "short" spans only 10
+  trials <- tibble(
+    run_id = rep(c("a", "b", "short"), each = 2),
+    dataset = "any",
+    timestamp = as.POSIXct("2025-03-01 12:00:00") + c(0, 40, 0, 40, 0, 10),
+    correct = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE)
+  )
+
+  out <- suppressMessages(score_sre(trials, dataset = "any"))
+
+  expect_equal(sort(out$run_id), c("a", "b"))
+})
 
 test_that("score_pa() uses per-dataset trial maxima and drops short runs", {
   trials <- tibble(

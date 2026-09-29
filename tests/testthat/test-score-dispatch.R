@@ -21,11 +21,13 @@ test_that("score() routes to IRT scoring when a model spec matches", {
 test_that("score() routes to the custom sre scorer when no spec matches", {
   # scoring table with no row for (sre, any)
   scoring_table <- tibble::tibble(item_task = "math", dataset = "co")
+  # score_sre() needs dataset, run_id, timestamp, correct; runs shorter than
+  # 30 seconds are dropped, and the two runs need different net scores so the
+  # within-dataset z-scaling is defined
   trials <- tibble::tibble(
     run_id = rep(c("a", "b"), each = 2),
-    trial_number = rep(1:2, 2),
-    rt_numeric = rep(20, 4),
     dataset = "co",
+    timestamp = rep(as.POSIXct(c("2025-03-01 12:00:00", "2025-03-01 12:00:40")), 2),
     correct = c(TRUE, TRUE, TRUE, FALSE)
   )
 
@@ -34,7 +36,7 @@ test_that("score() routes to the custom sre scorer when no spec matches", {
           scoring_table = scoring_table, registry_dir = NULL)
   )
 
-  expect_true(all(scored$score_type == "guessing_adjusted_number_correct_scaled"))
+  expect_true(all(scored$score_type == "guessing_adjusted_rate_scaled"))
 })
 
 test_that("score() returns NULL when no scoring method applies", {
