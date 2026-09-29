@@ -263,7 +263,7 @@ add_item_metadata <- function(trials, metadata_version = "current") {
       .data$item_task
     )) |>
     # code chance for roar tasks
-    mutate(chance = if_else(.data$item_task %in% c("swr", "sre"), 0.5, chance)) |>
+    mutate(chance = if_else(.data$item_task %in% c("swr", "sre"), 0.5, .data$chance)) |>
     mutate(group = tidyr::replace_na(.data$group, ""),
            entry = tidyr::replace_na(.data$entry, "")) |>
     rename(item_original = "item", item_group = "group", item = "entry")

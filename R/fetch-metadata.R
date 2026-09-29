@@ -20,6 +20,7 @@ fetch_item_mapping_trial <- function(version = "current") {
 
 #' Get item UIDs mapped by fields
 #'
+#' @inheritParams fetch_item_mapping_trial
 #' @export
 #' @examples
 #' \dontrun{
@@ -31,6 +32,7 @@ fetch_item_mapping_fields <- function(version = "current") {
 
 #' Get item UIDs mapped by item_id
 #'
+#' @inheritParams fetch_item_mapping_trial
 #' @export
 #' @examples
 #' \dontrun{
@@ -42,6 +44,7 @@ fetch_item_mapping_id <- function(version = "current") {
 
 #' Get metadata for corpus items
 #'
+#' @inheritParams fetch_item_mapping_trial
 #' @export
 #' @examples
 #' \dontrun{
@@ -53,6 +56,7 @@ fetch_corpus_items <- function(version = "current") {
 
 #' Get metadata for survey items
 #'
+#' @inheritParams fetch_item_mapping_trial
 #' @export
 #' @examples
 #' \dontrun{

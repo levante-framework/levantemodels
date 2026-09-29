@@ -117,7 +117,7 @@ score_sre <- \(trial_data_task, dataset) {
 
   trial_data_task |>
     group_by(.data$dataset, .data$run_id) |>
-    summarise(elapsed = difftime(max(timestamp), min(timestamp), units = "sec"),
+    summarise(elapsed = difftime(max(.data$timestamp), min(.data$timestamp), units = "sec"),
               net = sum(.data$correct) - sum(!.data$correct),
               score = .data$net / as.numeric(.data$elapsed),
               .groups = "drop") |>
