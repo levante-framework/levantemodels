@@ -39,7 +39,8 @@ Suggests:
     knitr,
     mirt,
     rmarkdown,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    withr
 Remotes:
     levante=levante-framework/levante-r,
     redivis=redivis/redivis-r
