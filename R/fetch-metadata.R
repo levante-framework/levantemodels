@@ -54,6 +54,21 @@ fetch_corpus_items <- function(version = "current") {
   fetch_metadata_table("corpus_items:ezfc", version = version)
 }
 
+#' Get item exclusions
+#'
+#' The item exclusion table, synced from Airtable. See
+#' [apply_exclusions()] for its columns.
+#'
+#' @inheritParams fetch_item_mapping_trial
+#' @export
+#' @examples
+#' \dontrun{
+#' exclusions <- fetch_exclusions()
+#' }
+fetch_exclusions <- function(version = "current") {
+  fetch_metadata_table("exclusions:0b5t", version = version)
+}
+
 #' Get metadata for survey items
 #'
 #' @inheritParams fetch_item_mapping_trial

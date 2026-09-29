@@ -143,9 +143,12 @@ mod_spec_str <- \(spec) {
 #' @param runs run data from one task and one dataset
 #' @param scoring_table tibble returned by fetch_scoring_table()
 #' @param registry_dir redivis directory returned by fetch_registry_dir()
-score <- \(task, dataset, trials, runs, scoring_table, registry_dir) {
+#' @param exclusions optional exclusion table (e.g. from fetch_exclusions()),
+#'   applied to trials with apply_exclusions() before scoring
+score <- \(task, dataset, trials, runs, scoring_table, registry_dir, exclusions = NULL) {
 
   message(glue::glue('Scoring data for task "{task}" and dataset "{dataset}"'))
+  if (!is.null(exclusions)) trials <- apply_exclusions(trials, exclusions)
 
   cat_tasks <- c()
   # cat_tasks <- c("swr")
