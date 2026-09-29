@@ -39,7 +39,7 @@ fit_task_models_multigroup(
 
 - group:
 
-  variable to use as groups (bare variable)
+  variable to use as groups (string or bare variable)
 
 - registry_dir:
 

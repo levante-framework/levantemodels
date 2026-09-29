@@ -39,7 +39,7 @@ fit_task_models_pooled(
 
 - subset_var:
 
-  variable to subset by (bare variable)
+  variable to subset by (string or bare variable)
 
 - subset_val:
 

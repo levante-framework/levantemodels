@@ -8,6 +8,12 @@ Get item UIDs mapped by item_id
 fetch_item_mapping_id(version = "current")
 ```
 
+## Arguments
+
+- version:
+
+  Redivis version tag of the `levante_metadata_items` dataset
+
 ## Examples
 
 ``` r

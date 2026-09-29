@@ -8,6 +8,12 @@ Get metadata for survey items
 fetch_survey_items(version = "current")
 ```
 
+## Arguments
+
+- version:
+
+  Redivis version tag of the `levante_metadata_items` dataset
+
 ## Examples
 
 ``` r
