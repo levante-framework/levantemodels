@@ -27,7 +27,7 @@ and values are vectors of length 3 (priorType, val1, val2)}
 
 \item{task}{one value in item_task}
 
-\item{subset_var}{variable to subset by (bare variable)}
+\item{subset_var}{variable to subset by (string or bare variable)}
 
 \item{subset_val}{value to subset to (string)}
 

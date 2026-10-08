@@ -36,7 +36,7 @@ test_that("recode_hf() codes extreme RTs incorrect and labels start/stay/switch"
   out <- recode_hf(df) |> arrange(trial_number)
 
   expect_equal(out$correct, c(FALSE, TRUE, TRUE))
-  expect_equal(out$item_uid, c("g_a_start", "g_a_stay", "g_b_switch"))
+  expect_equal(out$item_uid, c("hf_g_a_start", "hf_g_a_stay", "hf_g_b_switch"))
 })
 
 test_that("recode_wrong_items() rescores against the corrected answer key", {

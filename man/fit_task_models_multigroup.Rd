@@ -26,7 +26,7 @@ and values are vectors of length 3 (priorType, val1, val2)}
 
 \item{task}{one value in item_task}
 
-\item{group}{variable to use as groups (bare variable)}
+\item{group}{variable to use as groups (string or bare variable)}
 
 \item{registry_dir}{string indicating directory in which to save models}
 }

@@ -6,6 +6,9 @@
 \usage{
 fetch_item_mapping_fields(version = "current")
 }
+\arguments{
+\item{version}{Redivis version tag of the \code{levante_metadata_items} dataset}
+}
 \description{
 Get item UIDs mapped by fields
 }

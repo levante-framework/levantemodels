@@ -16,21 +16,20 @@ invariances <- list(
 #' @param priors list of priors, where names are parameter names (e.g. d, a1)
 #'   and values are vectors of length 3 (priorType, val1, val2)
 #' @param task one value in item_task
-#' @param subset_var variable to subset by (bare variable)
+#' @param subset_var variable to subset by (string or bare variable)
 #' @param subset_val value to subset to (string)
 #' @param registry_dir string indicating directory in which to save models
 #'
 #' @export
 fit_task_models_pooled <- \(task_data, models, priors, task, subset_var, subset_val, registry_dir) {
 
-  subset_var <- enquo(subset_var)
-  var_name <- rlang::as_name(subset_var)
+  var_name <- rlang::as_name(rlang::enquo(subset_var))
 
   # filter task data to given task + language
   trials <- task_data |>
     filter(.data$item_task == task) |>
-    filter(!!subset_var == subset_val) |>
-    tidyr::unnest(.data$data) |>
+    filter(.data[[var_name]] == subset_val) |>
+    tidyr::unnest("data") |>
     filter(!is.na(.data$correct))
 
   # prep data for modeling
@@ -66,7 +65,7 @@ fit_task_models_pooled <- \(task_data, models, priors, task, subset_var, subset_
       mod_rec <- modelrecord(mod, rownames(data_prepped))
 
       # save model record
-      mod_file <- glue::glue("{task}_{str_to_lower(itemtype)}_f{nfact}.rds")
+      mod_file <- glue::glue("{task}_{stringr::str_to_lower(itemtype)}_f{nfact}.rds")
       readr::write_rds(mod_rec, file.path(out_dir, mod_file), compress = "gz")
     })
 }
@@ -76,7 +75,7 @@ fit_task_models_pooled <- \(task_data, models, priors, task, subset_var, subset_
 #' @inheritParams fit_task_models_pooled
 fit_bylanguage_task <- \(task_data, models, priors, task, registry_dir) {
   task_data |> filter(.data$item_task == task) |> pull(.data$language) |> unique() |>
-    purrr::walk(\(lang) fit_task_models_pooled(task_data, models, priors, task, language, lang, registry_dir),
+    purrr::walk(\(lang) fit_task_models_pooled(task_data, models, priors, task, "language", lang, registry_dir),
                 .progress = TRUE)
 }
 
@@ -86,7 +85,7 @@ fit_bylanguage_task <- \(task_data, models, priors, task, registry_dir) {
 #' @param lang string indicating language
 fit_bylanguage_lang <- \(task_data, models, priors, lang, registry_dir) {
   task_data |> filter(.data$language == lang) |> pull(.data$item_task) |> unique() |>
-    purrr::walk(\(task) fit_task_models_pooled(task_data, models, priors, task, language, lang, registry_dir),
+    purrr::walk(\(task) fit_task_models_pooled(task_data, models, priors, task, "language", lang, registry_dir),
                 .progress = TRUE)
 }
 
@@ -94,11 +93,11 @@ fit_bylanguage_lang <- \(task_data, models, priors, lang, registry_dir) {
 #' for a given task and group variable, fit and record set of multigroup models
 #' @export
 #' @inheritParams fit_task_models_pooled
-#' @param group variable to use as groups (bare variable)
+#' @param group variable to use as groups (string or bare variable)
 fit_task_models_multigroup <- \(task_data, models, priors, task, group,
                                 registry_dir) {
 
-  group <- enquo(group)
+  group_name <- rlang::as_name(rlang::enquo(group))
 
   if (!(task %in% unique(task_data$item_task))) {
     message(glue::glue("Task {task} not present in task_data"))
@@ -108,8 +107,8 @@ fit_task_models_multigroup <- \(task_data, models, priors, task, group,
   # filter task data to given task
   trials <- task_data |>
     filter(.data$item_task == task) |>
-    tidyr::unnest(.data$data) |>
-    rename(group = !!group) |>
+    tidyr::unnest("data") |>
+    rename(group = all_of(group_name)) |>
     mutate(item_uid = as.character(.data$item_uid)) |>
     filter(!is.na(.data$correct))
 
@@ -134,7 +133,7 @@ fit_task_models_multigroup <- \(task_data, models, priors, task, group,
   }
 
   # construct output directory
-  out_dir <- file.path(registry_dir, task, paste0("multigroup_", rlang::as_name(group)))
+  out_dir <- file.path(registry_dir, task, paste0("multigroup_", group_name))
   dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 
   mods <- models |> purrr::pmap(
@@ -158,7 +157,7 @@ fit_task_models_multigroup <- \(task_data, models, priors, task, group,
 
       # construct model record out of model
       mod_rec_overlap <- modelrecord(mod_overlap, rownames(data_prepped_overlap))
-      mod_file <- glue::glue("{task}_{str_to_lower(itemtype)}_f{nfact}_{invariance}.rds")
+      mod_file <- glue::glue("{task}_{stringr::str_to_lower(itemtype)}_f{nfact}_{invariance}.rds")
       out_dir_overlap <- file.path(out_dir, "overlap_items")
       dir.create(out_dir_overlap, recursive = TRUE, showWarnings = FALSE)
       readr::write_rds(mod_rec_overlap, file.path(out_dir_overlap, mod_file), compress = "gz")
@@ -224,7 +223,7 @@ fit_task_models_multigroup <- \(task_data, models, priors, task, group,
       mod_rec_full <- modelrecord(mod_full, rownames(data_prepped_full))
 
       # save model record
-      mod_file <- glue::glue("{task}_{str_to_lower(itemtype)}_f{nfact}_{invariance}.rds")
+      mod_file <- glue::glue("{task}_{stringr::str_to_lower(itemtype)}_f{nfact}_{invariance}.rds")
       out_dir_full <- file.path(out_dir, "all_items")
       dir.create(out_dir_full, recursive = TRUE, showWarnings = FALSE)
       readr::write_rds(mod_rec_full, file.path(out_dir_full, mod_file), compress = "gz")

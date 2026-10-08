@@ -6,6 +6,9 @@
 \usage{
 fetch_corpus_items(version = "current")
 }
+\arguments{
+\item{version}{Redivis version tag of the \code{levante_metadata_items} dataset}
+}
 \description{
 Get metadata for corpus items
 }
