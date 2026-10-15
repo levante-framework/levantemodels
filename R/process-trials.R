@@ -224,20 +224,24 @@ add_item_ids <- function(trials, metadata_version = "current") {
     # join in item_id-based item UID map
     left_join(id_map, by = "item_id")
 
-  trials_mapped <- trials_joined |>
+  trials_sources <- trials_joined |>
     # move all item ID columns to rows
     tidyr::pivot_longer(contains("item_uid"),
                         names_to = "item_uid_source", values_to = "item_uid") |>
     # filter to each trial's present item IDs
     # group_by(.data$trial_id, .data$task_id) |>
     filter(!is.na(.data$item_uid), .data$item_uid != "") |>
-    # collapse item ID sources
-    group_by(.data$trial_id, .data$task_id, .data$item_uid) |>
-    summarise(item_uid_source = list(.data$item_uid_source),
-              .groups = "drop")
+    group_by(.data$trial_id, .data$task_id, .data$item_uid)
+
+  # collapse item ID sources (splitting by group is much faster than a grouped
+  # summarise over this many groups)
+  trials_mapped <- group_keys(trials_sources) |>
+    mutate(item_uid_source = split(trials_sources$item_uid_source,
+                                   group_indices(trials_sources)) |> unname())
 
   # validate that no trial maps to multiple conflicting item IDs
-  conflicts <- trials_mapped |> group_by(.data$trial_id) |> filter(n() > 1) |> ungroup()
+  conflicts <- trials_mapped |>
+    filter(duplicated(.data$trial_id) | duplicated(.data$trial_id, fromLast = TRUE))
   if (nrow(conflicts) > 0) {
     warning(glue::glue("{n_distinct(conflicts$trial_id)} trial(s) map to multiple ",
                        "conflicting item IDs and may be scored incorrectly"),
