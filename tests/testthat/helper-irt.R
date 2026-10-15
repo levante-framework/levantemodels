@@ -55,8 +55,9 @@ irt_fixture_multigroup <- function(n_per_group = 250) {
   set.seed(321)
   item_uids <- paste0("m", 1:5)
   difficulty <- c(-1.2, -0.4, 0.2, 0.9, 1.6)
-  groups <- rep(c("g1", "g2"), each = n_per_group)
-  theta <- c(rnorm(n_per_group, 0), rnorm(n_per_group, 0.4))
+  n_per_group <- rep_len(n_per_group, 2)
+  groups <- rep(c("g1", "g2"), times = n_per_group)
+  theta <- c(rnorm(n_per_group[1], 0), rnorm(n_per_group[2], 0.4))
   probs <- plogis(outer(theta, difficulty, `-`))
   resp <- matrix(rbinom(length(probs), 1, probs),
                  nrow = length(groups),
