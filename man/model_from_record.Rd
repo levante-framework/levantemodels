@@ -10,5 +10,6 @@ model_from_record(mod_rec)
 \item{mod_rec}{ModelRecord object}
 }
 \description{
-given ModelRecord object, instantiate mirt model object
+Models are cached for the session (see \code{\link[=get_model_record]{get_model_record()}}), so scoring
+several datasets with the same model record reconstructs it only once.
 }

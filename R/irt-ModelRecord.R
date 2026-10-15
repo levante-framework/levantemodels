@@ -118,15 +118,25 @@ scores <- \(object) object@scores
 tabdata <- \(object) object@tabdata
 
 #' given ModelRecord object, instantiate mirt model object
+#'
+#' Models are cached for the session (see [get_model_record()]), so scoring
+#' several datasets with the same model record reconstructs it only once.
+#'
 #' @param mod_rec ModelRecord object
 #' @export
 model_from_record <- \(mod_rec) {
+  # identical() is immediate for the same object, e.g. a cached model record
+  cached <- purrr::detect(model_cache$models, \(m) identical(m$record, mod_rec))
+  if (!is.null(cached)) return(cached$model)
+
   if (model_class(mod_rec) == "SingleGroupClass") {
-    mirt::mirt(data = mod_rec@data, pars = model_vals(mod_rec), TOL = NaN)
+    mod <- mirt::mirt(data = mod_rec@data, pars = model_vals(mod_rec), TOL = NaN)
   } else if (model_class(mod_rec) == "MultipleGroupClass") {
-    mirt::multipleGroup(data = mod_rec@data, group = mod_rec@groups,
-                        pars = model_vals(mod_rec), TOL = NaN)
+    mod <- mirt::multipleGroup(data = mod_rec@data, group = mod_rec@groups,
+                               pars = model_vals(mod_rec), TOL = NaN)
   }
+  model_cache$models <- c(model_cache$models, list(list(record = mod_rec, model = mod)))
+  mod
 }
 
 #' count number of items with non-NA responses for each run
