@@ -38,14 +38,14 @@
 - [`fetch_survey_items()`](https://levante-framework.github.io/levantemodels/reference/fetch_survey_items.md)
   : Get metadata for survey items
 - [`fit_bylanguage_lang()`](https://levante-framework.github.io/levantemodels/reference/fit_bylanguage_lang.md)
-  : wrapper: given language, fit by_language model for each task
+  : Wrapper: given language, fit by_language model for each task
 - [`fit_bylanguage_task()`](https://levante-framework.github.io/levantemodels/reference/fit_bylanguage_task.md)
-  : wrapper: given task, fit by_language model for each language
+  : Wrapper: given task, fit by_language model for each language
 - [`fit_task_models_multigroup()`](https://levante-framework.github.io/levantemodels/reference/fit_task_models_multigroup.md)
-  : for a given task and group variable, fit and record set of
+  : For a given task and group variable, fit and record set of
   multigroup models
 - [`fit_task_models_pooled()`](https://levante-framework.github.io/levantemodels/reference/fit_task_models_pooled.md)
-  : for a given task + subsetting variable/value, fit set of pooled
+  : For a given task + subsetting variable/value, fit set of pooled
   models
 - [`generate_model_str_numeric()`](https://levante-framework.github.io/levantemodels/reference/generate_model_str_numeric.md)
   : generates mirt model strings

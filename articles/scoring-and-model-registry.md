@@ -1,5 +1,8 @@
 # Scoring and the model registry
 
+> **Note:** The content of this vignette was generated using Claude
+> agents and then reviewed by package authors.
+
 Loading LEVANTE data (the `get_*` functions used below) is handled by
 the companion
 [`levante`](https://github.com/levante-framework/levante-r) package;
