@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-fit.R
 \name{fit_task_models_pooled}
 \alias{fit_task_models_pooled}
-\title{for a given task + subsetting variable/value, fit set of pooled models}
+\title{For a given task + subsetting variable/value, fit set of pooled models}
 \usage{
 fit_task_models_pooled(
   task_data,
@@ -15,24 +15,44 @@ fit_task_models_pooled(
 )
 }
 \arguments{
-\item{task_data}{dataframe with columns item_task, the value of subset_var,
-and data, where data is trial-level data}
+\item{task_data}{data frame nested by task and grouping variables, with
+columns \code{item_task}, the grouping variable(s) (e.g. \code{language},
+\code{dataset}), and \code{data}, a list-column of trial-level data frames with
+(at least) columns \code{run_id}, \code{item_uid}, \code{correct} (logical or 0/1), and
+\code{chance} (chance level of the item)}
 
-\item{models}{dataframe of models to fit, specified with columns nfact
-(number of factors), itemtype (Rasch/2PL), invariance
-(configural/metric/scalar)}
+\item{models}{data frame of models to fit, one per row, with columns
+\code{nfact} (number of factors) and \code{itemtype} (\code{"Rasch"} or \code{"2PL"}), and
+no other columns}
 
 \item{priors}{list of priors, where names are parameter names (e.g. d, a1)
-and values are vectors of length 3 (priorType, val1, val2)}
+and values are vectors of length 3 (priorType, val1, val2), e.g.
+\code{list(d = c("norm", 0, 3), a1 = c("norm", 1, 0.3))}}
 
 \item{task}{one value in item_task}
 
-\item{subset_var}{variable to subset by (string or bare variable)}
+\item{subset_var}{variable to subset by (string or bare variable); must be
+a column of \code{task_data} (not of the nested \code{data})}
 
 \item{subset_val}{value to subset to (string)}
 
 \item{registry_dir}{string indicating directory in which to save models}
 }
+\value{
+Called for its side effect of writing model files.
+}
 \description{
-for a given task + subsetting variable/value, fit set of pooled models
+Fits each model in \code{models} as a single-group model to the trials for
+\code{task} where \code{subset_var == subset_val}, and saves each one as a
+\link{ModelRecord} at
+\verb{\{registry_dir\}/\{task\}/by_\{subset_var\}/\{subset_val\}/\{task\}_\{itemtype\}_f\{nfact\}.rds}
+(with \code{itemtype} lowercased). See \code{vignette("fitting-irt-models")} for a
+worked example.
+}
+\details{
+Before fitting, trials with \code{NA} \code{correct} are dropped, repeated
+presentations of an item within a run are treated as separate instances
+whose parameters are constrained to be equal, and item instances with no
+variance in responses are dropped. Each item's \code{chance} is used as its fixed
+lower asymptote (guessing parameter).
 }

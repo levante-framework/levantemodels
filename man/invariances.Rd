@@ -11,6 +11,8 @@ An object of class \code{list} of length 3.
 invariances
 }
 \description{
-mapping from invariance names to corresponding mirt argument
+Named list giving, for each invariance level that can be used in the
+\code{invariance} column of \code{models} in \code{\link[=fit_task_models_multigroup]{fit_task_models_multigroup()}}, the value
+passed to the \code{invariance} argument of \code{\link[mirt:multipleGroup]{mirt::multipleGroup()}}.
 }
 \keyword{datasets}

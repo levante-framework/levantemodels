@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-fit.R
 \name{fit_task_models_multigroup}
 \alias{fit_task_models_multigroup}
-\title{for a given task and group variable, fit and record set of multigroup models}
+\title{For a given task and group variable, fit and record set of multigroup models}
 \usage{
 fit_task_models_multigroup(
   task_data,
@@ -14,22 +14,50 @@ fit_task_models_multigroup(
 )
 }
 \arguments{
-\item{task_data}{dataframe with columns item_task, the value of subset_var,
-and data, where data is trial-level data}
+\item{task_data}{data frame nested by task and grouping variables, with
+columns \code{item_task}, the grouping variable(s) (e.g. \code{language},
+\code{dataset}), and \code{data}, a list-column of trial-level data frames with
+(at least) columns \code{run_id}, \code{item_uid}, \code{correct} (logical or 0/1), and
+\code{chance} (chance level of the item)}
 
-\item{models}{dataframe of models to fit, specified with columns nfact
-(number of factors), itemtype (Rasch/2PL), invariance
-(configural/metric/scalar)}
+\item{models}{data frame of models to fit, one per row, with columns
+\code{nfact} (number of factors), \code{itemtype} (\code{"Rasch"} or \code{"2PL"}), and
+\code{invariance} (a name in \link{invariances}: \code{"configural"}, \code{"metric"}, or
+\code{"scalar"}), and no other columns}
 
 \item{priors}{list of priors, where names are parameter names (e.g. d, a1)
-and values are vectors of length 3 (priorType, val1, val2)}
+and values are vectors of length 3 (priorType, val1, val2), e.g.
+\code{list(d = c("norm", 0, 3), a1 = c("norm", 1, 0.3))}}
 
 \item{task}{one value in item_task}
 
-\item{group}{variable to use as groups (string or bare variable)}
+\item{group}{variable to use as groups (string or bare variable); can be a
+column of either \code{task_data} or the nested \code{data}}
 
 \item{registry_dir}{string indicating directory in which to save models}
 }
+\value{
+Called for its side effect of writing model files (returns \code{NULL}
+without fitting anything if \code{task} isn't in \code{task_data} or no items are
+shared by all groups).
+}
 \description{
-for a given task and group variable, fit and record set of multigroup models
+For each model in \code{models}, fits a multigroup model to the trials for
+\code{task}, with each level of \code{group} as a group, in up to two steps:
+}
+\details{
+\enumerate{
+\item An \code{overlap_items} model fit to only the items that are present (and
+have variance) in every group.
+\item For models with metric or scalar invariance, an \code{all_items} model fit to
+all items, with the parameters of the overlapping items fixed at their
+values from the \code{overlap_items} model, so that these items anchor the
+scale for the remaining items.
+}
+
+Each model is saved as a \link{ModelRecord} at
+\verb{\{registry_dir\}/\{task\}/multigroup_\{group\}/\{overlap_items|all_items\}/\{task\}_\{itemtype\}_f\{nfact\}_\{invariance\}.rds}
+(with \code{itemtype} lowercased). Data preparation is as in
+\code{\link[=fit_task_models_pooled]{fit_task_models_pooled()}}. See \code{vignette("fitting-irt-models")} for a
+worked example.
 }
