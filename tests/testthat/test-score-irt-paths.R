@@ -27,9 +27,10 @@ test_that("score_irt() backfills items missing from the data and scores all runs
   expect_true(all(is.finite(scored$score)))
 })
 
-test_that("score_irt() falls back to a model group for scalar models", {
+test_that("score_irt() scores a group not in a single group model", {
   fx <- irt_fixture_2pl()
-  # a group not present in the model; scalar invariance -> use the model's group
+  # a group not present in the model; a single group model has one latent
+  # distribution, so the data's group doesn't matter
   trials_baddataset <- transform(fx$trials, dataset = "not_a_group")
 
   scored <- suppressMessages(score_irt(trials_baddataset, fx$spec, fx$mod_rec))
@@ -38,18 +39,18 @@ test_that("score_irt() falls back to a model group for scalar models", {
 })
 
 test_that("score_irt() scores a group not in a scalar multigroup model under the pooled prior", {
-  fx <- irt_fixture_multigroup()
+  # unequal group sizes, so that equal weighting differs from weighting by runs
+  fx <- irt_fixture_multigroup(n_per_group = c(400, 100))
   new_trials <- transform(subset(fx$trials, dataset == "g2"), dataset = "g_new")
   scored <- suppressMessages(score_irt(new_trials, fx$spec, fx$mod_rec))
 
-  # independent EAP by quadrature under the mixture of the two groups' priors
+  # independent EAP by quadrature under the equally weighted mixture of the two groups' priors
   vals <- model_vals(fx$mod_rec)
   par <- \(grp, name) vals$value[vals$group == grp & vals$name == name]
   m <- c(par("g1", "MEAN_1"), par("g2", "MEAN_1"))
   v <- c(par("g1", "COV_11"), par("g2", "COV_11"))
-  w <- as.numeric(table(fx$groups)[c("g1", "g2")]) / length(fx$groups)
-  pooled_mean <- sum(w * m)
-  pooled_var <- sum(w * v) + sum(w * (m - pooled_mean)^2)
+  pooled_mean <- mean(m)
+  pooled_var <- mean(v) + mean((m - pooled_mean)^2)
   a <- par("g1", "a1")
   d <- par("g1", "d")
   theta <- seq(-8, 8, length.out = 401)
@@ -73,6 +74,22 @@ test_that("score_irt() scores a single run from a group not in a scalar multigro
 
   expect_equal(nrow(scored), 1)
   expect_true(is.finite(scored$score))
+})
+
+test_that("score_irt() errors for trial data from more than one dataset", {
+  fx <- irt_fixture_multigroup()
+
+  expect_error(suppressMessages(score_irt(fx$trials, fx$spec, fx$mod_rec)),
+               "one dataset")
+})
+
+test_that("score_irt() errors for a group not in a multigroup model with unspecified invariance", {
+  fx <- irt_fixture_multigroup()
+  new_trials <- transform(subset(fx$trials, dataset == "g2"), dataset = "g_new")
+  spec <- modifyList(fx$spec, list(invariance = NA))
+
+  expect_error(suppressMessages(score_irt(new_trials, spec, fx$mod_rec)),
+               "not in the multigroup model")
 })
 
 test_that("score_irt() returns NULL for metric/configural models with an unknown group", {

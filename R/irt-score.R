@@ -15,6 +15,7 @@ score_irt <- \(trial_data_task, mod_spec, mod_rec, method = "EAP") {
   data_prepped <- data_wide |> select(-"group")
   groups <- data_wide |> pull("group")
   data_group <- unique(groups)
+  stopifnot("trial data must be from one dataset" = length(data_group) == 1)
 
   # handle data having groups that aren't in model
   new_group <- FALSE
@@ -28,6 +29,9 @@ score_irt <- \(trial_data_task, mod_spec, mod_rec, method = "EAP") {
       # distribution of the model's groups
     } else if (!is.na(mod_spec$invariance) & mod_spec$invariance == "scalar") {
       new_group <- TRUE
+      # for multigroup models with unspecified invariance, scoring not possible
+    } else if (model_class(mod_rec) == "MultipleGroupClass") {
+      stop(glue::glue("Can't score group {data_group}, which is not in the multigroup model and the model's invariance is not specified."))
     }
   }
 
@@ -82,8 +86,8 @@ score_irt <- \(trial_data_task, mod_spec, mod_rec, method = "EAP") {
 #' For scoring data from a group that is not in a scalar multigroup model:
 #' returns a single group model with the shared item parameters and the
 #' pooled latent distribution of the model's groups, i.e. the mean and
-#' variance of the mixture of the groups' normal distributions, weighted by
-#' each group's number of calibration runs. Nothing is estimated.
+#' variance of the equally weighted mixture of the groups' normal
+#' distributions. Nothing is estimated.
 #'
 #' @param mod_rec ModelRecord object for a scalar multigroup model
 #' @return mirt SingleGroupClass model
@@ -94,9 +98,8 @@ pooled_group_model <- \(mod_rec) {
   group_par <- \(par) mod_vals$value[match(paste(group_names, par), paste(mod_vals$group, mod_vals$name))]
   means <- group_par("MEAN_1")
   vars <- group_par("COV_11")
-  weights <- as.numeric(table(factor(mod_rec@groups, levels = group_names))) / length(mod_rec@groups)
-  pooled_mean <- sum(weights * means)
-  pooled_var <- sum(weights * vars) + sum(weights * (means - pooled_mean)^2)
+  pooled_mean <- mean(means)
+  pooled_var <- mean(vars) + mean((means - pooled_mean)^2)
   message(glue::glue("--Group not in model, scoring under pooled prior N({round(pooled_mean, 2)}, {round(pooled_var, 2)})"))
 
   # reference group's single group model with the pooled mean and variance

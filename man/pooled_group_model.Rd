@@ -16,7 +16,7 @@ mirt SingleGroupClass model
 For scoring data from a group that is not in a scalar multigroup model:
 returns a single group model with the shared item parameters and the
 pooled latent distribution of the model's groups, i.e. the mean and
-variance of the mixture of the groups' normal distributions, weighted by
-each group's number of calibration runs. Nothing is estimated.
+variance of the equally weighted mixture of the groups' normal
+distributions. Nothing is estimated.
 }
 \keyword{internal}
