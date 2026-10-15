@@ -1,3 +1,10 @@
+#' @section Options:
+#' - `levantemodels.cache_dir`: directory in which to cache the metadata tables
+#'   fetched from `levante_metadata_items` and `levante_metadata_scoring`
+#'   (`fetch_corpus_items()`, `fetch_scoring_table()`, etc.), so that later
+#'   sessions read them from disk instead of downloading them again. Only
+#'   released dataset versions are cached. Defaults to `NULL` (no caching).
+#'
 #' @keywords internal
 "_PACKAGE"
 

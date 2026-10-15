@@ -11,7 +11,7 @@ fetch_registry_dir <- \(version = "current") {
 #' @inheritParams fetch_registry_dir
 fetch_scoring_table <- \(version = "current") {
   ds <- redivis::redivis$organization("levante")$dataset("levante_metadata_scoring:e97h", version = version)
-  ds$table("scoring_models:t416")$to_tibble() |>
+  fetch_cached_table(ds, "scoring_models:t416") |>
     mutate(redivis_source = ds$get()$scoped_reference, .before = everything())
 }
 
@@ -20,7 +20,7 @@ fetch_scoring_table <- \(version = "current") {
 #' @inheritParams fetch_registry_dir
 fetch_scoring_parameters <- \(version = "current") {
   ds <- redivis::redivis$organization("levante")$dataset("levante_metadata_scoring:e97h", version = version)
-  ds$table("item_parameters:4cvk")$to_tibble() |>
+  fetch_cached_table(ds, "item_parameters:4cvk") |>
     mutate(redivis_source = ds$get()$scoped_reference, .before = everything())
 }
 
