@@ -11,12 +11,14 @@ see the companion
 `levantemodels` is internally-facing tooling and depends on `levante`
 for data access.
 
-Some useful links: - [An overview of the LEVANTE
-project](https://researcher.levante-network.org/overview). - [Details
-about LEVANTE’s scoring and
-psychometrics](https://researcher.levante-network.org/measures/scoring-and-psychometrics). -
-[Details about the LEVANTE child
-tasks](https://researcher.levante-network.org/measures/direct-child-measures).
+Some useful links:
+
+- [An overview of the LEVANTE
+  project](https://researcher.levante-network.org/overview).
+- [Details about LEVANTE’s scoring and
+  psychometrics](https://researcher.levante-network.org/measures/scoring-and-psychometrics).
+- [Details about the LEVANTE child
+  tasks](https://researcher.levante-network.org/measures/direct-child-measures).
 
 ## Installation
 
@@ -28,11 +30,22 @@ devtools::install_github("levante-framework/levantemodels")
 
 ## What’s here
 
+- **Data processing** —
+  [`process_trials()`](https://levante-framework.github.io/levantemodels/reference/process_trials.md),
+  [`process_runs()`](https://levante-framework.github.io/levantemodels/reference/process_runs.md),
+  [`process_surveys()`](https://levante-framework.github.io/levantemodels/reference/process_surveys.md),
+  [`process_participants()`](https://levante-framework.github.io/levantemodels/reference/process_participants.md).
 - **Trial recoding** —
   [`recode_trials()`](https://levante-framework.github.io/levantemodels/reference/recode_trials.md)
   makes loaded trial data scoring-ready (slider thresholding, Hearts &
   Flowers / SDS / ToM recodes, item-key fixes).
-- **The IRT scoring pipeline** —
+- **IRT model fitting** —
+  [`fit_task_models_pooled()`](https://levante-framework.github.io/levantemodels/reference/fit_task_models_pooled.md)
+  for SingleGroup models and
+  [`fit_task_models_multigroup()`](https://levante-framework.github.io/levantemodels/reference/fit_task_models_multigroup.md)
+  for MultiGroup models, along with iteration wrappers and helper
+  functions for prepping data and accompanying objects.
+- **IRT scoring** —
   [`score()`](https://levante-framework.github.io/levantemodels/reference/score.md)
   /
   [`score_irt()`](https://levante-framework.github.io/levantemodels/reference/score_irt.md),
@@ -45,12 +58,11 @@ devtools::install_github("levante-framework/levantemodels")
   [`model_vals()`](https://levante-framework.github.io/levantemodels/reference/ModelRecord.md),
   [`model_class()`](https://levante-framework.github.io/levantemodels/reference/ModelRecord.md),
   [`scores()`](https://levante-framework.github.io/levantemodels/reference/ModelRecord.md)).
-- **Processing** —
-  [`process_trials()`](https://levante-framework.github.io/levantemodels/reference/process_trials.md),
-  [`process_runs()`](https://levante-framework.github.io/levantemodels/reference/process_runs.md),
-  [`process_surveys()`](https://levante-framework.github.io/levantemodels/reference/process_surveys.md),
-  [`process_participants()`](https://levante-framework.github.io/levantemodels/reference/process_participants.md).
 
 See the [Scoring and the model
 registry](https://levante-framework.github.io/levantemodels/articles/scoring-and-model-registry.html)
-vignette for the full trials → score pipeline.
+vignette for the full trials → scores pipeline.
+
+See the [Fitting IRT
+models](https://levante-framework.github.io/levantemodels/articles/fitting-irt-models.html)
+vignette for a walkthrough of the model fitting pipeline.

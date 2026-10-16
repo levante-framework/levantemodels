@@ -1,6 +1,6 @@
-# recode items for ToM
+# Recode items for ToM
 
-recode items for ToM
+Recode items for ToM
 
 ## Usage
 

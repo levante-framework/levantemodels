@@ -1,6 +1,6 @@
-# recode correctness for SDS
+# Recode correctness for SDS
 
-recode correctness for SDS
+Recode correctness for SDS
 
 ## Usage
 

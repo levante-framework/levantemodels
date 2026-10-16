@@ -1,6 +1,6 @@
-# add identifiers for each instance of each item
+# Add identifiers for each instance of each item
 
-add identifiers for each instance of each item
+Add identifiers for each instance of each item
 
 ## Usage
 

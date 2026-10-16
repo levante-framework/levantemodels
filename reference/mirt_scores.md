@@ -1,6 +1,6 @@
-# get participant scores of fitted mirt model
+# Get participant scores of fitted mirt model
 
-get participant scores of fitted mirt model
+Get participant scores of fitted mirt model
 
 ## Usage
 

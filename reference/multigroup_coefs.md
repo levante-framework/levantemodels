@@ -1,6 +1,6 @@
-# get coefficients for multigroup model
+# Get coefficients for multigroup model
 
-get coefficients for multigroup model
+Get coefficients for multigroup model
 
 ## Usage
 

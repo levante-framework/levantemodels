@@ -1,6 +1,6 @@
-# given trial data and model record, score data from corresponding model
+# Given trial data and model record, score data from corresponding model
 
-given trial data and model record, score data from corresponding model
+Given trial data and model record, score data from corresponding model
 
 ## Usage
 

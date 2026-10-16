@@ -1,6 +1,6 @@
-# get the scoring specification in scoring_table for a given task + dataset
+# Get the scoring specification in scoring_table for a given task + dataset
 
-get the scoring specification in scoring_table for a given task +
+Get the scoring specification in scoring_table for a given task +
 dataset
 
 ## Usage

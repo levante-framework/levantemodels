@@ -1,6 +1,6 @@
-# get groups out of multigroup model
+# Get groups out of multigroup model
 
-get groups out of multigroup model
+Get groups out of multigroup model
 
 ## Usage
 

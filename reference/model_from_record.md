@@ -1,4 +1,4 @@
-# given ModelRecord object, instantiate mirt model object
+# Given ModelRecord object, instantiate mirt model object
 
 Models are cached for the session (see
 [`get_model_record()`](https://levante-framework.github.io/levantemodels/reference/get_model_record.md)),

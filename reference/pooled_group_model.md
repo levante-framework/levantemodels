@@ -1,4 +1,4 @@
-# single group model with the pooled distribution of a multigroup model's groups
+# Single group model with the pooled distribution of a multigroup model's groups
 
 For scoring data from a group that is not in a scalar multigroup model:
 returns a single group model with the shared item parameters and the

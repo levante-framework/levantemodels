@@ -1,6 +1,6 @@
-# generates mirt model strings
+# Generates mirt model strings
 
-generates mirt model strings
+Generates mirt model strings
 
 ## Usage
 

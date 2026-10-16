@@ -1,6 +1,6 @@
-# remove items with no invariance in any single group
+# Remove items with no invariance in any single group
 
-remove items with no invariance in any single group
+Remove items with no invariance in any single group
 
 ## Usage
 

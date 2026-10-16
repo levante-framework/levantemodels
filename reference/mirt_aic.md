@@ -1,6 +1,6 @@
-# get AIC of fitted mirt model
+# Get AIC of fitted mirt model
 
-get AIC of fitted mirt model
+Get AIC of fitted mirt model
 
 ## Usage
 

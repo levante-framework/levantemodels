@@ -1,6 +1,6 @@
-# count number of items with non-NA responses for each run
+# Count number of items with non-NA responses for each run
 
-count number of items with non-NA responses for each run
+Count number of items with non-NA responses for each run
 
 ## Usage
 

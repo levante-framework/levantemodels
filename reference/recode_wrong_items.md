@@ -1,6 +1,6 @@
-# recode correctness for items with wrong answers
+# Recode correctness for items with wrong answers
 
-recode correctness for items with wrong answers
+Recode correctness for items with wrong answers
 
 ## Usage
 

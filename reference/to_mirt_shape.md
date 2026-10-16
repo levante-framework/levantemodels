@@ -1,6 +1,6 @@
-# format data for mirt
+# Format data for mirt
 
-format data for mirt
+Format data for mirt
 
 ## Usage
 

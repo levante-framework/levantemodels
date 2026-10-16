@@ -1,16 +1,16 @@
-# constructor helper
+# Constructor helper
 
-constructor helper
+Constructor helper
 
-helper to extract and tidy scores
+Helper to extract and tidy scores
 
-method for show generic
+Method for show generic
 
-method for AIC generic
+Method for AIC generic
 
-method for BIC generic
+Method for BIC generic
 
-method for logLik generic
+Method for logLik generic
 
 ## Usage
 

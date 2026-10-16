@@ -1,6 +1,6 @@
-# fetch file from model registry
+# Fetch file from model registry
 
-fetch file from model registry
+Fetch file from model registry
 
 ## Usage
 

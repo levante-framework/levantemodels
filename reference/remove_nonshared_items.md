@@ -1,6 +1,6 @@
-# remove items that aren't shared across all groups
+# Remove items that aren't shared across all groups
 
-remove items that aren't shared across all groups
+Remove items that aren't shared across all groups
 
 ## Usage
 

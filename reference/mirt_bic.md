@@ -1,6 +1,6 @@
-# get BIC of fitted mirt model
+# Get BIC of fitted mirt model
 
-get BIC of fitted mirt model
+Get BIC of fitted mirt model
 
 ## Usage
 

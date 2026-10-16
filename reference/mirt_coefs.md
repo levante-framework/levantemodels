@@ -1,6 +1,6 @@
-# get item parameters of fitted mirt model
+# Get item parameters of fitted mirt model
 
-get item parameters of fitted mirt model
+Get item parameters of fitted mirt model
 
 ## Usage
 

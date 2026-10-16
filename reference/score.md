@@ -1,6 +1,6 @@
-# score
+# Score
 
-score
+Score
 
 ## Usage
 

@@ -1,6 +1,6 @@
-# Fetch scoring specification table
+# Fetch scoring parameters table
 
-Fetch scoring specification table
+Fetch scoring parameters table
 
 ## Usage
 

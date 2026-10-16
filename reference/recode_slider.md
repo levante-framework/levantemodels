@@ -1,6 +1,6 @@
-# recode correctness for slider
+# Recode correctness for slider
 
-recode correctness for slider
+Recode correctness for slider
 
 ## Usage
 

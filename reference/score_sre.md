@@ -1,6 +1,6 @@
-# scores for SRE
+# Scores for SRE
 
-scores for SRE
+Scores for SRE
 
 ## Usage
 

@@ -1,6 +1,6 @@
-# scores from CAT
+# Scores from CAT
 
-scores from CAT
+Scores from CAT
 
 ## Usage
 

@@ -1,6 +1,6 @@
-# remove items with no variance
+# Remove items with no variance
 
-remove items with no variance
+Remove items with no variance
 
 ## Usage
 

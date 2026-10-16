@@ -1,6 +1,6 @@
-# extract item parameters from a model record
+# Extract item parameters from a model record
 
-extract item parameters from a model record
+Extract item parameters from a model record
 
 ## Usage
 

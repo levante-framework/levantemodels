@@ -1,6 +1,6 @@
-# convert model spec to filename
+# Convert model spec to filename
 
-convert model spec to filename
+Convert model spec to filename
 
 ## Usage
 

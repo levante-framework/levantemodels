@@ -1,6 +1,6 @@
-# get item fits out of multigroup model
+# Get item fits out of multigroup model
 
-get item fits out of multigroup model
+Get item fits out of multigroup model
 
 ## Usage
 

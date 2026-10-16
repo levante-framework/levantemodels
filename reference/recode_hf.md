@@ -1,6 +1,6 @@
-# recode correctness + reclassify items for HF
+# Recode correctness + reclassify items for HF
 
-recode correctness + reclassify items for HF
+Recode correctness + reclassify items for HF
 
 ## Usage
 
