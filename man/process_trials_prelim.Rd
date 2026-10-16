@@ -2,7 +2,7 @@
 % Please edit documentation in R/process-trials.R
 \name{process_trials_prelim}
 \alias{process_trials_prelim}
-\title{Process trial data}
+\title{Process trial data (preliminary steps)}
 \usage{
 process_trials_prelim(
   dataset_spec,
@@ -36,7 +36,7 @@ IDs.}
 entire table).}
 }
 \description{
-Process trial data
+Process trial data (preliminary steps)
 }
 \examples{
 \dontrun{
