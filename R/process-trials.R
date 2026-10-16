@@ -1,4 +1,4 @@
-#' Process trial data
+#' Process trial data (preliminary steps)
 #'
 #' @inheritParams process_trials
 #'
@@ -16,11 +16,11 @@ process_trials_prelim <- function(dataset_spec,
                                   participants = NULL, # all participants if null
                                   max_results = NULL) {
 
-  where_str <- levante:::build_filter("task_id", tasks)
+  where_str <- build_filter("task_id", tasks)
   query_str <- glue::glue("SELECT * FROM trials {where_str}") |> stringr::str_trim()
 
-  trials <- levante:::get_datasets_data(
-    dataset_spec, levante:::query_getter("trials", query_str, max_results))
+  trials <- get_datasets_data(
+    dataset_spec, query_getter("trials", query_str, max_results))
 
   # if participants supplied, filter to trials for only those participants
   if (!is.null(participants)) {

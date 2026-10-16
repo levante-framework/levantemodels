@@ -31,8 +31,8 @@ process_participants <- function(dataset_spec, max_results = NULL) {
      WHERE users.user_type IN ('student', 'guest')"
   )
 
-  participants <- levante:::get_datasets_data(
-    dataset_spec, levante:::query_getter("users", query_str, max_results))
+  participants <- get_datasets_data(
+    dataset_spec, query_getter("users", query_str, max_results))
 
   legacy_dataset_names <- list(
     "pilot_uniandes_co_bogota"     = "CO-bogota-pilot",
