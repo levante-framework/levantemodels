@@ -124,6 +124,7 @@ score_cat <- \(runs) {
 
 #' scores for PA -- deprecated
 #'
+#' @keywords internal
 #' @param trial_data_task trial data from one task and one dataset
 #' @param dataset dataset
 score_pa <- \(trial_data_task, dataset)  {
