@@ -81,7 +81,7 @@ process_trials <- function(dataset_spec,
     arrange(.data$task_id, .data$user_id, .data$run_id, .data$trial_number) |>
     select("redivis_source", "task_id", "user_id", "run_id", "trial_id",
            "trial_number", "item_uid", "item_task", "item_group", "item",
-           "correct", "rt", "rt_numeric", "response", "response_type",
+           "correct", "rt", "rt_numeric", "response", "response_source",
            "item_original", "answer", "distractors", "chance", "difficulty",
            "theta_estimate", "theta_se", timestamp = "server_timestamp",
            "valid_trial", "validation_msg_trial")
