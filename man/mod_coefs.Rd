@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-ModelRecord.R
 \name{mod_coefs}
 \alias{mod_coefs}
-\title{extract item parameters from a model record}
+\title{Extract item parameters from a model record}
 \usage{
 mod_coefs(mod_rec, item_sep = "-")
 }
@@ -12,5 +12,5 @@ mod_coefs(mod_rec, item_sep = "-")
 \item{item_sep}{separator between item and instance index}
 }
 \description{
-extract item parameters from a model record
+Extract item parameters from a model record
 }

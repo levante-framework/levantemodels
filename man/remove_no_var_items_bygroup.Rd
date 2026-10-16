@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-helpers.R
 \name{remove_no_var_items_bygroup}
 \alias{remove_no_var_items_bygroup}
-\title{remove items with no invariance in any single group}
+\title{Remove items with no invariance in any single group}
 \usage{
 remove_no_var_items_bygroup(df)
 }
@@ -10,5 +10,5 @@ remove_no_var_items_bygroup(df)
 \item{df}{trial data}
 }
 \description{
-remove items with no invariance in any single group
+Remove items with no invariance in any single group
 }

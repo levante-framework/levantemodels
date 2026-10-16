@@ -28,7 +28,7 @@ ModelRecord <- setClass(
   )
 )
 
-#' constructor helper
+#' Constructor helper
 #'
 #' @param mod mirt model object
 #' @param row_ids character vector
@@ -57,7 +57,7 @@ modelrecord <- \(mod, row_ids) {
   )
 }
 
-#' helper to extract and tidy scores
+#' Helper to extract and tidy scores
 #' @rdname ModelRecord
 extract_scores <- \(mod, row_ids) {
   mirt::fscores(mod, method = "EAP", full.scores.SE = TRUE) |>
@@ -67,27 +67,27 @@ extract_scores <- \(mod, row_ids) {
     mutate(run_id = row_ids, .before = everything())
 }
 
-#' method for show generic
+#' Method for show generic
 #' @rdname ModelRecord
 setMethod("show", "ModelRecord", \(object) {
   cat(glue::glue("{is(object)[[1]]} of a {object@model_class} model ({object@nfact} factor {object@itemtype})"))
 })
 
-#' method for AIC generic
+#' Method for AIC generic
 #' @rdname ModelRecord
 #' @export
 setMethod("AIC", "ModelRecord", \(object) {
   object@fit$AIC
 })
 
-#' method for BIC generic
+#' Method for BIC generic
 #' @rdname ModelRecord
 #' @export
 setMethod("BIC", "ModelRecord", \(object) {
   object@fit$BIC
 })
 
-#' method for logLik generic
+#' Method for logLik generic
 #' @rdname ModelRecord
 #' @export
 setMethod("logLik", "ModelRecord", \(object) {
@@ -117,7 +117,7 @@ scores <- \(object) object@scores
 #' @export
 tabdata <- \(object) object@tabdata
 
-#' given ModelRecord object, instantiate mirt model object
+#' Given ModelRecord object, instantiate mirt model object
 #' @param mod_rec ModelRecord object
 #' @export
 model_from_record <- \(mod_rec) {
@@ -129,7 +129,7 @@ model_from_record <- \(mod_rec) {
   }
 }
 
-#' count number of items with non-NA responses for each run
+#' Count number of items with non-NA responses for each run
 #' @inheritParams model_from_record
 #' @export
 count_items <- \(mod_rec) {
@@ -140,7 +140,7 @@ count_items <- \(mod_rec) {
     tibble::enframe(name = "run_id", value = "prop_items")
 }
 
-#' extract item parameters from a model record
+#' Extract item parameters from a model record
 #' @inheritParams model_from_record
 #' @param item_sep separator between item and instance index
 #' @export

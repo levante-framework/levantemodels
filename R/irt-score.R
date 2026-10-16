@@ -1,4 +1,4 @@
-#' given trial data and model record, score data from corresponding model
+#' Given trial data and model record, score data from corresponding model
 #'
 #' @param trial_data_task trial data from one task and one dataset
 #' @param mod_spec list with entries item_task, dataset, model_set, subset, itemtype, nfact, invariance
@@ -81,7 +81,7 @@ score_irt <- \(trial_data_task, mod_spec, mod_rec, method = "EAP") {
            registry_version = stringr::str_extract(mod_spec$redivis_source, "(?<=:)[^:]*$"))
 }
 
-#' single group model with the pooled distribution of a multigroup model's groups
+#' Single group model with the pooled distribution of a multigroup model's groups
 #'
 #' For scoring data from a group that is not in a scalar multigroup model:
 #' returns a single group model with the shared item parameters and the
@@ -110,7 +110,7 @@ pooled_group_model <- \(mod_rec) {
   mirt::mirt(data = mod_rec@data, pars = ref_vals, TOL = NaN)
 }
 
-#' scores from CAT
+#' Scores from CAT
 #'
 #' @param runs run data from one task and one dataset
 #' @export
@@ -122,7 +122,7 @@ score_cat <- \(runs) {
     mutate(score_type = "ability_cat")
 }
 
-#' scores for PA -- deprecated
+#' Scores for PA -- deprecated
 #'
 #' @keywords internal
 #' @param trial_data_task trial data from one task and one dataset
@@ -146,7 +146,7 @@ score_pa <- \(trial_data_task, dataset)  {
     mutate(score_type = "prop_correct")
 }
 
-#' scores for SRE
+#' Scores for SRE
 #'
 #' @param trial_data_task trial data from one task and one dataset
 #' @param dataset dataset
@@ -173,7 +173,7 @@ mod_spec_str <- \(spec) {
   spec[c("model_set", "subset", "itemtype", "nfact", "invariance")] |> purrr::discard(is.na) |> paste(collapse = "_")
 }
 
-#' score
+#' Score
 #' @export
 #'
 #' @param task task

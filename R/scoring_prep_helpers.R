@@ -44,7 +44,7 @@ recode_trials <- \(df, slider_threshold = 0.15) {
            chance = .data$chance |> tidyr::replace_na(0))
 }
 
-#' recode correctness + reclassify items for HF
+#' Recode correctness + reclassify items for HF
 #'
 #' @inheritParams recode_trials
 #' @export
@@ -74,7 +74,7 @@ recode_hf <- \(df) {
     bind_rows(hf_trials)
 }
 
-#' recode correctness for slider
+#' Recode correctness for slider
 #'
 #' @inheritParams recode_trials
 #' @export
@@ -98,7 +98,7 @@ recode_slider <- \(df, slider_threshold) {
     bind_rows(slider_trials)
 }
 
-#' recode correctness for items with wrong answers
+#' Recode correctness for items with wrong answers
 #'
 #' @inheritParams recode_trials
 #' @param wrong_items tibble with columns item_uid and answer_fixed
@@ -116,7 +116,7 @@ recode_wrong_items <- \(df, wrong_items) {
     select(-"answer_fixed")
 }
 
-#' recode items for ToM
+#' Recode items for ToM
 #'
 #' @inheritParams recode_trials
 #' @export
@@ -132,7 +132,7 @@ recode_tom <- \(df) {
     bind_rows(tom_disagg)
 }
 
-#' recode correctness for SDS
+#' Recode correctness for SDS
 #'
 #' @inheritParams recode_trials
 #' @export

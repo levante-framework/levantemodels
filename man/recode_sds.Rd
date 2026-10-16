@@ -2,7 +2,7 @@
 % Please edit documentation in R/scoring_prep_helpers.R
 \name{recode_sds}
 \alias{recode_sds}
-\title{recode correctness for SDS}
+\title{Recode correctness for SDS}
 \usage{
 recode_sds(df)
 }
@@ -10,5 +10,5 @@ recode_sds(df)
 \item{df}{trial data}
 }
 \description{
-recode correctness for SDS
+Recode correctness for SDS
 }

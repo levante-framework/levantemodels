@@ -1,4 +1,4 @@
-#' mapping from invariance names to corresponding mirt argument
+#' Mapping from invariance names to corresponding mirt argument
 #'
 #' Named list giving, for each invariance level that can be used in the
 #' `invariance` column of `models` in [fit_task_models_multigroup()], the value

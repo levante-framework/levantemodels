@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-extract.R
 \name{mirt_scores}
 \alias{mirt_scores}
-\title{get participant scores of fitted mirt model}
+\title{Get participant scores of fitted mirt model}
 \usage{
 mirt_scores(mod, df, df_prepped)
 }
@@ -14,5 +14,5 @@ mirt_scores(mod, df, df_prepped)
 \item{df_prepped}{trial data in wide mirt shape (runs x items)}
 }
 \description{
-get participant scores of fitted mirt model
+Get participant scores of fitted mirt model
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-ModelRecord.R
 \name{count_items}
 \alias{count_items}
-\title{count number of items with non-NA responses for each run}
+\title{Count number of items with non-NA responses for each run}
 \usage{
 count_items(mod_rec)
 }
@@ -10,5 +10,5 @@ count_items(mod_rec)
 \item{mod_rec}{ModelRecord object}
 }
 \description{
-count number of items with non-NA responses for each run
+Count number of items with non-NA responses for each run
 }

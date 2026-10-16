@@ -1,4 +1,4 @@
-#' get item parameters of fitted mirt model
+#' Get item parameters of fitted mirt model
 #' @export
 #' @param mod fit mirt model (SingleGroupClass or MultiGroupClass object)
 #' @param IRTpars logical; convert slope intercept parameters into traditional IRT parameters?
@@ -6,7 +6,7 @@ mirt_coefs <- function(mod, IRTpars = TRUE) {
   stats::coef(mod, simplify = TRUE, IRTpars = IRTpars)$items |> as_tibble(rownames = "item")
 }
 
-#' get participant scores of fitted mirt model
+#' Get participant scores of fitted mirt model
 #' @export
 #' @inheritParams generate_model_str_numeric
 #' @inheritParams mirt_coefs
@@ -17,17 +17,17 @@ mirt_scores <- function(mod, df, df_prepped) {
   df |> distinct(.data$user_id, .data$run_id) |> left_join(user_scores)
 }
 
-#' get AIC of fitted mirt model
+#' Get AIC of fitted mirt model
 #' @export
 #' @inheritParams mirt_coefs
 mirt_aic <- function(mod) mod@Fit$AIC
 
-#' get BIC of fitted mirt model
+#' Get BIC of fitted mirt model
 #' @export
 #' @inheritParams mirt_coefs
 mirt_bic <- function(mod) mod@Fit$BIC
 
-#' get coefficients for multigroup model
+#' Get coefficients for multigroup model
 #' @export
 #' @inheritParams mirt_coefs
 multigroup_coefs <- \(mod) {
@@ -36,14 +36,14 @@ multigroup_coefs <- \(mod) {
     purrr::list_rbind(names_to = "site")
 }
 
-#' get groups out of multigroup model
+#' Get groups out of multigroup model
 #' @export
 #' @inheritParams mirt_coefs
 multigroup_extract_groups <- \(mod) {
   mod@Data$groupNames |> purrr::set_names() |> purrr::map(\(gr) mirt::extract.group(mod, group = gr))
 }
 
-#' get item fits out of multigroup model
+#' Get item fits out of multigroup model
 #' @export
 #' @param submods list of SingleGroupClass mirt models
 #' @param fit_stats character vector indicating which fit statistics should be computed

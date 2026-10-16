@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-helpers.R
 \name{to_mirt_shape_grouped}
 \alias{to_mirt_shape_grouped}
-\title{format data for mirt}
+\title{Format data for mirt}
 \usage{
 to_mirt_shape_grouped(df)
 }
@@ -10,5 +10,5 @@ to_mirt_shape_grouped(df)
 \item{df}{trial data}
 }
 \description{
-format data for mirt
+Format data for mirt
 }
