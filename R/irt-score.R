@@ -54,18 +54,15 @@ score_irt <- \(trial_data_task, mod_spec, mod_rec, method = "EAP") {
   stopifnot(identical(colnames(data_aligned), items(mod_rec)))
 
   # set up mirt model object for data using parameter values from model record
-  mod_vals <- model_vals(mod_rec)
   if (model_class(mod_rec) == "SingleGroupClass") {
     # reconstruct single group model
-    mod <- mirt::mirt(data = mod_rec@data, pars = mod_vals, TOL = NaN)
+    mod <- model_from_record(mod_rec)
   } else if (model_class(mod_rec) == "MultipleGroupClass" && new_group) {
     # data's group not in model: score under the pooled distribution of the model's groups
     mod <- pooled_group_model(mod_rec)
   } else if (model_class(mod_rec) == "MultipleGroupClass") {
-    # reconstruct multiple group model
-    mod_recon <- mirt::multipleGroup(data = mod_rec@data, group = mod_rec@groups, pars = mod_vals, TOL = NaN)
-    # extract single group model for given group
-    mod <- mirt::extract.group(mod_recon, group = data_group)
+    # single group model for the data's group
+    mod <- mirt::mirt(data = mod_rec@data, pars = group_vals(mod_rec, data_group), TOL = NaN)
   }
 
   # get scores from model

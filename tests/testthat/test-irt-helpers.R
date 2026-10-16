@@ -13,6 +13,24 @@ test_that("dedupe_items() numbers repeated items per run", {
   expect_equal(as.character(out$item_inst), c("a-1", "a-2", "b-1", "a-1"))
 })
 
+test_that("dedupe_items() matches a grouped seq_along() numbering", {
+  # interleaved repeats, NA item_uids, data frame and grouped input
+  df <- data.frame(
+    run_id = c("r2", "r1", "r1", "r2", "r1", "r1", "r2", "r1"),
+    item_uid = c("a", "b", "a", "a", NA, "b", NA, NA),
+    other = 1:8
+  )
+  grouped_seq <- \(d) d |>
+    group_by(run_id, item_uid) |>
+    mutate(instance = seq_along(item_uid)) |>
+    ungroup() |>
+    mutate(item_inst = glue::glue("{item_uid}-{instance}"))
+
+  expect_identical(dedupe_items(df), grouped_seq(df))
+  expect_identical(dedupe_items(group_by(df, other)), grouped_seq(group_by(df, other)))
+  expect_identical(dedupe_items(df[0, ]), grouped_seq(df[0, ]))
+})
+
 test_that("to_mirt_shape() pivots to a run-by-item matrix with run_id rownames", {
   df <- tibble(
     run_id = c("r1", "r1", "r2"),

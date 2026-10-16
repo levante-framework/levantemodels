@@ -5,10 +5,15 @@
 #'
 #' @inheritParams generate_model_str_numeric
 dedupe_items <- function(df, item_sep = "-") {
-  df |>
-    group_by(.data$run_id, .data$item_uid) |>
-    mutate(instance = seq_along(.data$item_uid)) |> # i
+  df_grouped <- df |> group_by(.data$run_id, .data$item_uid)
+  # number each item's instances within each run in row order (vectorized,
+  # since a grouped mutate is slow with this many groups)
+  groups <- group_indices(df_grouped)
+  instance <- integer(length(groups))
+  instance[order(groups)] <- sequence(tabulate(groups, nbins = n_groups(df_grouped)))
+  df_grouped |>
     ungroup() |>
+    mutate(instance = instance) |> # i
     mutate(item_inst = glue::glue("{item_uid}{item_sep}{instance}")) # item_i
 }
 

@@ -11,7 +11,7 @@ fetch_registry_dir <- \(version = "current") {
 #' @inheritParams fetch_registry_dir
 fetch_scoring_table <- \(version = "current") {
   ds <- redivis::redivis$organization("levante")$dataset("levante_metadata_scoring:e97h", version = version)
-  ds$table("scoring_models:t416")$to_tibble() |>
+  fetch_cached_table(ds, "scoring_models:t416") |>
     mutate(redivis_source = ds$get()$scoped_reference, .before = everything())
 }
 
@@ -20,7 +20,7 @@ fetch_scoring_table <- \(version = "current") {
 #' @inheritParams fetch_registry_dir
 fetch_scoring_parameters <- \(version = "current") {
   ds <- redivis::redivis$organization("levante")$dataset("levante_metadata_scoring:e97h", version = version)
-  ds$table("item_parameters:4cvk")$to_tibble() |>
+  fetch_cached_table(ds, "item_parameters:4cvk") |>
     mutate(redivis_source = ds$get()$scoped_reference, .before = everything())
 }
 
@@ -62,7 +62,20 @@ get_registry_file <- \(mod_filename, registry_dir) {
   mod_rec
 }
 
+# session cache of model records fetched from one registry directory, and of
+# mirt models reconstructed from model records (scoring many datasets reuses
+# the same few models)
+model_cache <- new.env(parent = emptyenv())
+model_cache$registry_dir <- NULL
+model_cache$records <- list()
+model_cache$models <- list()
+
 #' Get the model record indexed in registry_dir for a given scoring specification
+#'
+#' Each model record is downloaded once per session and then reused. The cache
+#' holds one registry directory at a time: passing a different `registry_dir`
+#' (e.g. from a new call to `fetch_registry_dir()`) clears it.
+#'
 #' @export
 #' @param spec Model specification (list with names item_task, model_set, subset, itemtype, nfact, invariance).
 #' @param registry_dir Model registry directory as returned by `fetch_registry_dir()`.
@@ -70,10 +83,20 @@ get_registry_file <- \(mod_filename, registry_dir) {
 get_model_record <- \(spec, registry_dir) {
 
   # construct filename from specification
-  mod_filename <- model_spec_filename(spec)
+  mod_filename <- as.character(model_spec_filename(spec))
 
-  # fetch corresponding file from model registry
-  get_registry_file(mod_filename, registry_dir)
+  # clear cache if registry directory has changed
+  if (!identical(model_cache$registry_dir, registry_dir)) {
+    model_cache$registry_dir <- registry_dir
+    model_cache$records <- list()
+    model_cache$models <- list()
+  }
+
+  # fetch corresponding file from model registry if not already cached
+  if (is.null(model_cache$records[[mod_filename]])) {
+    model_cache$records[[mod_filename]] <- get_registry_file(mod_filename, registry_dir)
+  }
+  model_cache$records[[mod_filename]]
 }
 
 # invariance as recorded in mirt
