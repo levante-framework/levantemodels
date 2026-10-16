@@ -174,6 +174,23 @@ add_item_ids <- function(trials, metadata_version = "current") {
     "ha_knock_attribution"       = "tom_knock_papers_attribution"
   )
 
+  # fix wrong item IDs in item banks
+  fix_item_uid <- \(item_uid) {
+    item_uid |>
+      stringr::str_replace("^mrot_3d_.*?_", "mrot_3d_shape_") |>
+      stringr::str_replace("^mrot_(.*)_200", "mrot_\\1_160") |>
+      stringr::str_replace("^mrot_(.*)_240", "mrot_\\1_120") |>
+      stringr::str_replace("^mrot_(.*)_280", "mrot_\\1_080") |>
+      stringr::str_replace("^mrot_(.*)_320", "mrot_\\1_040") |>
+      stringr::str_replace("^tom_ha_", "ha_") |>
+      stringr::str_replace("^vocab__", "vocab_word_") |>
+      forcats::fct_recode(!!!itembank_recodes) |>
+      as.character() |>
+      na_if("_") |>
+      na_if("math_fraction_512_16") |>
+      na_if("mg_forward_3grid_len2")
+  }
+
   suppressWarnings(
     trials_prepped <- trials |>
       # create item IDs for ROAR tasks (pa -> subtask + answer, sre -> item_id, swr -> answer)
@@ -183,20 +200,11 @@ add_item_ids <- function(trials, metadata_version = "current") {
         stringr::str_detect(task_id, "^sre(-|$)") ~ glue::glue("sre_{item_id}"),
         stringr::str_detect(task_id, "^swr(-|$)") ~ glue::glue("swr_{answer}"),
       ) |> as.character() |> stringr::str_replace_all("-", "_")) |>
-      # fix wrong item IDs in item banks
-      mutate(item_uid = .data$item_uid |>
-               stringr::str_replace("^mrot_3d_.*?_", "mrot_3d_shape_") |>
-               stringr::str_replace("^mrot_(.*)_200", "mrot_\\1_160") |>
-               stringr::str_replace("^mrot_(.*)_240", "mrot_\\1_120") |>
-               stringr::str_replace("^mrot_(.*)_280", "mrot_\\1_080") |>
-               stringr::str_replace("^mrot_(.*)_320", "mrot_\\1_040") |>
-               stringr::str_replace("^tom_ha_", "ha_") |>
-               stringr::str_replace("^vocab__", "vocab_word_") |>
-               forcats::fct_recode(!!!itembank_recodes) |>
-               as.character() |>
-               na_if("_") |>
-               na_if("math_fraction_512_16") |>
-               na_if("mg_forward_3grid_len2")) |>
+      # fix wrong item IDs in item banks (once per distinct item ID)
+      mutate(item_uid = {
+        item_uids <- unique(.data$item_uid)
+        fix_item_uid(item_uids)[match(.data$item_uid, item_uids)]
+      }) |>
       # remove stray SDS instructions and something-same trials (not actually test trials)
       # filter(is.na(.data$item_uid) | !stringr::str_detect(.data$item_uid, "-instr")) |>
       filter_out(stringr::str_detect(.data$item_uid, "-instr") |
@@ -262,7 +270,7 @@ add_item_metadata <- function(trials, metadata_version = "current") {
     left_join(corpus_items, by = "item_uid") |>
     # code item_task for roar tasks
     mutate(item_task = if_else(
-      .data$item_uid_source == "item_uid_roar",
+      is_only_source(.data$item_uid_source, "item_uid_roar"),
       stringr::str_extract(.data$task_id, "^[A-z]*"),
       .data$item_task
     )) |>
@@ -271,4 +279,14 @@ add_item_metadata <- function(trials, metadata_version = "current") {
     mutate(group = tidyr::replace_na(.data$group, ""),
            entry = tidyr::replace_na(.data$entry, "")) |>
     rename(item_original = "item", item_group = "group", item = "entry")
+}
+
+# given list of item ID sources for each trial, whether each trial's only
+# source is `source` (same as `sources == source`, but vectorized, since
+# comparing a list to a string converts each element to a string)
+is_only_source <- function(sources, source) {
+  single <- lengths(sources) == 1
+  only_source <- rep(FALSE, length(sources))
+  only_source[single] <- unlist(sources[single]) == source
+  only_source
 }

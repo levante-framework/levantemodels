@@ -18,3 +18,13 @@ test_that("reverse_value() reverses within an ordered scale", {
   expect_true(is.na(reverse_value(9, scale)))
   expect_true(is.na(reverse_value(2, c(1, NA, 3))))
 })
+
+test_that("is_only_source() matches comparing the source list to a string", {
+  sources <- list("item_uid_roar", c("item_uid_roar", "item_uid"),
+                  c("item_uid", "item_uid_roar"), "item_uid", character(0),
+                  NULL, NA_character_)
+
+  expect_identical(is_only_source(sources, "item_uid_roar"),
+                   suppressWarnings(sources == "item_uid_roar"))
+  expect_identical(is_only_source(list(), "item_uid_roar"), logical(0))
+})
