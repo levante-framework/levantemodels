@@ -12,7 +12,7 @@ surveys) into analysis-ready tables.
 - [`process_trials()`](https://levante-framework.github.io/levantemodels/reference/process_trials.md)
   : Process trial data
 - [`process_trials_prelim()`](https://levante-framework.github.io/levantemodels/reference/process_trials_prelim.md)
-  : Process trial data
+  : Process trial data (preliminary steps)
 - [`process_surveys()`](https://levante-framework.github.io/levantemodels/reference/process_surveys.md)
   : Process survey data
 - [`link_surveys()`](https://levante-framework.github.io/levantemodels/reference/link_surveys.md)

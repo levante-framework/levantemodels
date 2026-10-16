@@ -1,6 +1,6 @@
-# Process trial data
+# Process trial data (preliminary steps)
 
-Process trial data
+Process trial data (preliminary steps)
 
 ## Usage
 
