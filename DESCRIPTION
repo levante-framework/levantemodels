@@ -22,13 +22,13 @@ Depends:
 Imports:
     dplyr,
     glue,
-    levante,
     methods,
     purrr,
     redivis
 Suggests: 
     forcats,
     jsonlite,
+    levante,
     lubridate,
     readr,
     rlang,

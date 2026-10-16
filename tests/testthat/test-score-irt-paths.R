@@ -1,8 +1,8 @@
 # Tests for score_irt()'s branches beyond the simple single-group case:
-# multigroup model reconstruction, missing-item backfill, and the handling of
+# scoring one group of a multigroup model, missing-item backfill, and the handling of
 # data whose group is not in the model.
 
-test_that("score_irt() reconstructs a multigroup model and scores one group", {
+test_that("score_irt() scores one group of a multigroup model", {
   fx <- irt_fixture_multigroup()
   g1_trials <- subset(fx$trials, dataset == "g1")
 
@@ -11,8 +11,7 @@ test_that("score_irt() reconstructs a multigroup model and scores one group", {
   joined <- merge(scored, gold, by = "run_id")
 
   expect_equal(nrow(scored), sum(fx$groups == "g1"))
-  # extracting the group and scoring its calibration runs reproduces the
-  # model's stored EAP scores
+  # scoring the group's calibration runs reproduces the model's stored EAP scores
   expect_equal(joined$score, joined$ability, tolerance = 0.05)
 })
 

@@ -17,15 +17,15 @@ process_surveys <- function(dataset_spec,
                             remove_incomplete_surveys = FALSE,
                             max_results = NULL) {
 
-  where_str <- levante:::build_filter("surveys.survey_type", survey_types, allow_null = TRUE)
+  where_str <- build_filter("surveys.survey_type", survey_types, allow_null = TRUE)
   query_str <- glue::glue(
     "SELECT * FROM survey_responses
      LEFT JOIN surveys ON survey_responses.survey_id = surveys.survey_id
       {where_str}"
   )
 
-  surveys <- levante:::get_datasets_data(
-    dataset_spec, levante:::query_getter("survey_responses", query_str, max_results))
+  surveys <- get_datasets_data(
+    dataset_spec, query_getter("survey_responses", query_str, max_results))
 
   if (nrow(surveys) == 0) return()
 
