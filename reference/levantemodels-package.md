@@ -5,6 +5,17 @@ psychometric (IRT) scoring models. Holds the trial recoding, scoring
 pipeline, model registry, and ModelRecord machinery. For loading LEVANTE
 data, see the levante package.
 
+## Options
+
+- `levantemodels.cache_dir`: directory in which to cache the metadata
+  tables fetched from `levante_metadata_items` and
+  `levante_metadata_scoring`
+  ([`fetch_corpus_items()`](https://levante-framework.github.io/levantemodels/reference/fetch_corpus_items.md),
+  [`fetch_scoring_table()`](https://levante-framework.github.io/levantemodels/reference/fetch_scoring_table.md),
+  etc.), so that later sessions read them from disk instead of
+  downloading them again. Only released dataset versions are cached.
+  Defaults to `NULL` (no caching).
+
 ## See also
 
 Useful links:
