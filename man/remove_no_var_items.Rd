@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-helpers.R
 \name{remove_no_var_items}
 \alias{remove_no_var_items}
-\title{remove items with no variance}
+\title{Remove items with no variance}
 \usage{
 remove_no_var_items(df)
 }
@@ -10,5 +10,5 @@ remove_no_var_items(df)
 \item{df}{trial data}
 }
 \description{
-remove items with no variance
+Remove items with no variance
 }

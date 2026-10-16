@@ -15,7 +15,7 @@ fetch_scoring_table <- \(version = "current") {
     mutate(redivis_source = ds$get()$scoped_reference, .before = everything())
 }
 
-#' Fetch scoring specification table
+#' Fetch scoring parameters table
 #' @export
 #' @inheritParams fetch_registry_dir
 fetch_scoring_parameters <- \(version = "current") {
@@ -24,7 +24,7 @@ fetch_scoring_parameters <- \(version = "current") {
     mutate(redivis_source = ds$get()$scoped_reference, .before = everything())
 }
 
-#' get the scoring specification in scoring_table for a given task + dataset
+#' Get the scoring specification in scoring_table for a given task + dataset
 #' @export
 #' @param score_task string indicating task
 #' @param score_dataset string indicating dataset
@@ -36,7 +36,7 @@ get_model_spec <- \(score_task, score_dataset, scoring_table) {
   mod_spec |> as.list()
 }
 
-#' convert model spec to filename
+#' Convert model spec to filename
 #' @export
 #' @inheritParams get_model_record
 model_spec_filename <- \(spec) {
@@ -44,7 +44,7 @@ model_spec_filename <- \(spec) {
   mod_filename <- glue::glue("{spec$item_task}/{spec$model_set}/{spec$subset}/{mod_basename}.rds")
 }
 
-#' fetch file from model registry
+#' Fetch file from model registry
 #' @export
 #' @param mod_filename Filename (string) of model record to fetch.
 #' @inheritParams get_model_record
@@ -70,7 +70,7 @@ model_cache$registry_dir <- NULL
 model_cache$records <- list()
 model_cache$models <- list()
 
-#' get the model record indexed in registry_dir for a given scoring specification
+#' Get the model record indexed in registry_dir for a given scoring specification
 #'
 #' Each model record is downloaded once per session and then reused. The cache
 #' holds one registry directory at a time: passing a different `registry_dir`

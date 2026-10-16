@@ -2,7 +2,7 @@
 % Please edit documentation in R/scoring_prep_helpers.R
 \name{recode_wrong_items}
 \alias{recode_wrong_items}
-\title{recode correctness for items with wrong answers}
+\title{Recode correctness for items with wrong answers}
 \usage{
 recode_wrong_items(df, wrong_items)
 }
@@ -12,5 +12,5 @@ recode_wrong_items(df, wrong_items)
 \item{wrong_items}{tibble with columns item_uid and answer_fixed}
 }
 \description{
-recode correctness for items with wrong answers
+Recode correctness for items with wrong answers
 }

@@ -12,7 +12,7 @@
 \alias{items}
 \alias{scores}
 \alias{tabdata}
-\title{constructor helper}
+\title{Constructor helper}
 \usage{
 modelrecord(mod, row_ids)
 
@@ -44,15 +44,15 @@ tabdata(object)
 \item{object}{ModelRecord object}
 }
 \description{
-constructor helper
+Constructor helper
 
-helper to extract and tidy scores
+Helper to extract and tidy scores
 
-method for show generic
+Method for show generic
 
-method for AIC generic
+Method for AIC generic
 
-method for BIC generic
+Method for BIC generic
 
-method for logLik generic
+Method for logLik generic
 }

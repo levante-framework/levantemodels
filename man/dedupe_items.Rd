@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-helpers.R
 \name{dedupe_items}
 \alias{dedupe_items}
-\title{add identifiers for each instance of each item}
+\title{Add identifiers for each instance of each item}
 \usage{
 dedupe_items(df, item_sep = "-")
 }
@@ -12,5 +12,5 @@ dedupe_items(df, item_sep = "-")
 \item{item_sep}{string to put in between item_uid and instance index (defaults to "-")}
 }
 \description{
-add identifiers for each instance of each item
+Add identifiers for each instance of each item
 }

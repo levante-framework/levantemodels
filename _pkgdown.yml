@@ -1,3 +1,118 @@
 url: https://levante-framework.github.io/levantemodels/
+
 template:
   bootstrap: 5
+  light-switch: true
+  theme: github-light
+  theme-dark: github-dark
+  bslib:
+    base_font: whitney-book
+    heading_font: whitney-book
+    code_font: {google: "Fira Code"}
+    primary: "#1ca0f1"
+
+articles:
+  - title: All vignettes
+    navbar: ~
+    contents:
+    - scoring-and-model-registry
+    - fitting-irt-models
+
+reference:
+  - title: Processing data
+    desc: >
+      Clean and reshape raw LEVANTE data (participants, runs, trials, and
+      surveys) into analysis-ready tables.
+    contents:
+    - process_participants
+    - process_runs
+    - process_trials
+    - process_trials_prelim
+    - process_surveys
+    - link_surveys
+
+  - title: Recoding trials
+    desc: >
+      Correct trial-level correctness values and item coding so that trials are
+      ready for scoring.
+    contents:
+    - recode_trials
+    - recode_hf
+    - recode_sds
+    - recode_slider
+    - recode_tom
+    - recode_wrong_items
+
+  - title: Item metadata
+    desc: >
+      Fetch item metadata and mappings between trials and item UIDs.
+    contents:
+    - fetch_corpus_items
+    - fetch_survey_items
+    - starts_with("fetch_item_mapping")
+
+  - title: Scoring
+    desc: >
+      Score participants' task data, using IRT models from the model registry
+      or task-specific scoring methods.
+    contents:
+    - score
+    - score_irt
+    - score_cat
+    - score_sre
+
+  - title: Scoring specifications and model registry
+    desc: >
+      Look up which model is used to score each task and dataset, and retrieve
+      fitted models from the model registry.
+    contents:
+    - fetch_scoring_table
+    - fetch_scoring_parameters
+    - get_model_spec
+    - fetch_registry_dir
+    - get_model_record
+    - get_registry_file
+    - model_spec_filename
+    - model_from_record
+
+  - title: Model records
+    desc: >
+      The `ModelRecord` class stores a fitted IRT model with its data, items,
+      and scores, and provides accessors for them.
+    contents:
+    - ModelRecord-class
+    - modelrecord
+    - mod_coefs
+
+  - title: Preparing data for IRT models
+    desc: >
+      Filter items and reshape trial data into the format expected by mirt,
+      and specify model structure and invariance constraints.
+    contents:
+    - count_items
+    - dedupe_items
+    - starts_with("remove_")
+    - starts_with("to_mirt_shape")
+    - generate_model_str_numeric
+    - invariances
+
+  - title: Fitting IRT models
+    desc: >
+      Fit and record sets of pooled or multigroup IRT models for a task.
+    contents:
+    - fit_task_models_pooled
+    - fit_task_models_multigroup
+    - fit_bylanguage_task
+    - fit_bylanguage_lang
+
+  - title: Inspecting fitted models
+    desc: >
+      Extract fit statistics, item parameters, and scores from fitted mirt
+      models.
+    contents:
+    - starts_with("mirt_")
+    - starts_with("multigroup_")
+
+  - title: Utilities
+    contents:
+    - notebook_dataset

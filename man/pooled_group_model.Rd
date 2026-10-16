@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-score.R
 \name{pooled_group_model}
 \alias{pooled_group_model}
-\title{single group model with the pooled distribution of a multigroup model's groups}
+\title{Single group model with the pooled distribution of a multigroup model's groups}
 \usage{
 pooled_group_model(mod_rec)
 }

@@ -1,6 +1,6 @@
 ### functions to prep data for modeling
 
-#' add identifiers for each instance of each item
+#' Add identifiers for each instance of each item
 #' @export
 #'
 #' @inheritParams generate_model_str_numeric
@@ -17,7 +17,7 @@ dedupe_items <- function(df, item_sep = "-") {
     mutate(item_inst = glue::glue("{item_uid}{item_sep}{instance}")) # item_i
 }
 
-#' remove items with no variance
+#' Remove items with no variance
 #' @export
 #'
 #' @inheritParams generate_model_str_numeric
@@ -28,7 +28,7 @@ remove_no_var_items <- function(df) {
     ungroup()
 }
 
-#' remove items that aren't shared across all groups
+#' Remove items that aren't shared across all groups
 #' @export
 #'
 #' @inheritParams generate_model_str_numeric
@@ -42,7 +42,7 @@ remove_nonshared_items <- function(df) {
     filter(.data$n_groups == n_groups_total) # need to be in all groups
 }
 
-#' remove items with no invariance in any single group
+#' Remove items with no invariance in any single group
 #' @export
 #'
 #' @inheritParams generate_model_str_numeric
@@ -57,7 +57,7 @@ remove_no_var_items_bygroup <- function(df) {
     ungroup()
 }
 
-#' format data for mirt
+#' Format data for mirt
 #' @export
 #'
 #' @inheritParams generate_model_str_numeric
@@ -69,7 +69,7 @@ to_mirt_shape <- function(df) {
     tibble::column_to_rownames("run_id") # user_id to rownames
 }
 
-#' format data for mirt
+#' Format data for mirt
 #' @export
 #'
 #' @inheritParams generate_model_str_numeric
@@ -83,7 +83,7 @@ to_mirt_shape_grouped <- function(df) {
 
 paste_c <- \(...) paste(..., collapse = ",")
 
-#' generates mirt model strings
+#' Generates mirt model strings
 #'
 #' @param df trial data
 #' @param df_prepped trial data in wide mirt shape (runs x items)

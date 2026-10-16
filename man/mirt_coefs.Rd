@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-extract.R
 \name{mirt_coefs}
 \alias{mirt_coefs}
-\title{get item parameters of fitted mirt model}
+\title{Get item parameters of fitted mirt model}
 \usage{
 mirt_coefs(mod, IRTpars = TRUE)
 }
@@ -12,5 +12,5 @@ mirt_coefs(mod, IRTpars = TRUE)
 \item{IRTpars}{logical; convert slope intercept parameters into traditional IRT parameters?}
 }
 \description{
-get item parameters of fitted mirt model
+Get item parameters of fitted mirt model
 }

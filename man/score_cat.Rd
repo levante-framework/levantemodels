@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-score.R
 \name{score_cat}
 \alias{score_cat}
-\title{scores from CAT}
+\title{Scores from CAT}
 \usage{
 score_cat(runs)
 }
@@ -10,5 +10,5 @@ score_cat(runs)
 \item{runs}{run data from one task and one dataset}
 }
 \description{
-scores from CAT
+Scores from CAT
 }

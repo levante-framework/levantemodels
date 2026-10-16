@@ -2,7 +2,7 @@
 % Please edit documentation in R/scoring_prep_helpers.R
 \name{recode_slider}
 \alias{recode_slider}
-\title{recode correctness for slider}
+\title{Recode correctness for slider}
 \usage{
 recode_slider(df, slider_threshold)
 }
@@ -12,5 +12,5 @@ recode_slider(df, slider_threshold)
 \item{slider_threshold}{max normalized distance from slider target}
 }
 \description{
-recode correctness for slider
+Recode correctness for slider
 }

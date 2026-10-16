@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-score.R
 \name{score_pa}
 \alias{score_pa}
-\title{scores for PA -- deprecated}
+\title{Scores for PA -- deprecated}
 \usage{
 score_pa(trial_data_task, dataset)
 }
@@ -12,5 +12,6 @@ score_pa(trial_data_task, dataset)
 \item{dataset}{dataset}
 }
 \description{
-scores for PA -- deprecated
+Scores for PA -- deprecated
 }
+\keyword{internal}

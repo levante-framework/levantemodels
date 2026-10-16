@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-ModelRecord.R
 \name{model_from_record}
 \alias{model_from_record}
-\title{given ModelRecord object, instantiate mirt model object}
+\title{Given ModelRecord object, instantiate mirt model object}
 \usage{
 model_from_record(mod_rec)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-helpers.R
 \name{remove_nonshared_items}
 \alias{remove_nonshared_items}
-\title{remove items that aren't shared across all groups}
+\title{Remove items that aren't shared across all groups}
 \usage{
 remove_nonshared_items(df)
 }
@@ -10,5 +10,5 @@ remove_nonshared_items(df)
 \item{df}{trial data}
 }
 \description{
-remove items that aren't shared across all groups
+Remove items that aren't shared across all groups
 }

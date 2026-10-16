@@ -3,7 +3,7 @@
 \docType{data}
 \name{invariances}
 \alias{invariances}
-\title{mapping from invariance names to corresponding mirt argument}
+\title{Mapping from invariance names to corresponding mirt argument}
 \format{
 An object of class \code{list} of length 3.
 }

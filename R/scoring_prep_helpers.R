@@ -44,9 +44,10 @@ recode_trials <- \(df, slider_threshold = 0.15) {
            chance = .data$chance |> tidyr::replace_na(0))
 }
 
-#' recode correctness + reclassify items for HF
+#' Recode correctness + reclassify items for HF
 #'
 #' @inheritParams recode_trials
+#' @export
 recode_hf <- \(df) {
   message("Recoding hearts and flowers trials")
   hf_trials <- df |>
@@ -73,9 +74,10 @@ recode_hf <- \(df) {
     bind_rows(hf_trials)
 }
 
-#' recode correctness for slider
+#' Recode correctness for slider
 #'
 #' @inheritParams recode_trials
+#' @export
 recode_slider <- \(df, slider_threshold) {
   message("Recoding math slider trials")
   slider_trials <- df |>
@@ -96,10 +98,11 @@ recode_slider <- \(df, slider_threshold) {
     bind_rows(slider_trials)
 }
 
-#' recode correctness for items with wrong answers
+#' Recode correctness for items with wrong answers
 #'
 #' @inheritParams recode_trials
 #' @param wrong_items tibble with columns item_uid and answer_fixed
+#' @export
 recode_wrong_items <- \(df, wrong_items) {
   # inner_join (not right_join): only recode wrong-answer items that are
   # actually present. right_join would keep unmatched wrong_items keys, adding
@@ -113,9 +116,10 @@ recode_wrong_items <- \(df, wrong_items) {
     select(-"answer_fixed")
 }
 
-#' recode items for ToM
+#' Recode items for ToM
 #'
 #' @inheritParams recode_trials
+#' @export
 recode_tom <- \(df) {
   message("Recoding theory of mind trials")
   tom <- df |> filter(.data$item_task == "tom")
@@ -128,9 +132,10 @@ recode_tom <- \(df) {
     bind_rows(tom_disagg)
 }
 
-#' recode correctness for SDS
+#' Recode correctness for SDS
 #'
 #' @inheritParams recode_trials
+#' @export
 recode_sds <- function(df) {
 
   message("Recoding same different selection trials")

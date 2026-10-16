@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-score.R
 \name{score_sre}
 \alias{score_sre}
-\title{scores for SRE}
+\title{Scores for SRE}
 \usage{
 score_sre(trial_data_task, dataset)
 }
@@ -12,5 +12,5 @@ score_sre(trial_data_task, dataset)
 \item{dataset}{dataset}
 }
 \description{
-scores for SRE
+Scores for SRE
 }

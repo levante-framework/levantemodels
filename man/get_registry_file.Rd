@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-registry.R
 \name{get_registry_file}
 \alias{get_registry_file}
-\title{fetch file from model registry}
+\title{Fetch file from model registry}
 \usage{
 get_registry_file(mod_filename, registry_dir)
 }
@@ -12,5 +12,5 @@ get_registry_file(mod_filename, registry_dir)
 \item{registry_dir}{Model registry directory as returned by \code{fetch_registry_dir()}.}
 }
 \description{
-fetch file from model registry
+Fetch file from model registry
 }

@@ -1,4 +1,4 @@
-#' given trial data and model record, score data from corresponding model
+#' Given trial data and model record, score data from corresponding model
 #'
 #' @param trial_data_task trial data from one task and one dataset
 #' @param mod_spec list with entries item_task, dataset, model_set, subset, itemtype, nfact, invariance
@@ -78,7 +78,36 @@ score_irt <- \(trial_data_task, mod_spec, mod_rec, method = "EAP") {
            registry_version = stringr::str_extract(mod_spec$redivis_source, "(?<=:)[^:]*$"))
 }
 
-#' scores from CAT
+#' Single group model with the pooled distribution of a multigroup model's groups
+#'
+#' For scoring data from a group that is not in a scalar multigroup model:
+#' returns a single group model with the shared item parameters and the
+#' pooled latent distribution of the model's groups, i.e. the mean and
+#' variance of the equally weighted mixture of the groups' normal
+#' distributions. Nothing is estimated.
+#'
+#' @param mod_rec ModelRecord object for a scalar multigroup model
+#' @return mirt SingleGroupClass model
+#' @keywords internal
+pooled_group_model <- \(mod_rec) {
+  mod_vals <- model_vals(mod_rec)
+  group_names <- mod_rec@group_names
+  group_par <- \(par) mod_vals$value[match(paste(group_names, par), paste(mod_vals$group, mod_vals$name))]
+  means <- group_par("MEAN_1")
+  vars <- group_par("COV_11")
+  pooled_mean <- mean(means)
+  pooled_var <- mean(vars) + mean((means - pooled_mean)^2)
+  message(glue::glue("--Group not in model, scoring under pooled prior N({round(pooled_mean, 2)}, {round(pooled_var, 2)})"))
+
+  # reference group's single group model with the pooled mean and variance
+  mod_recon <- mirt::multipleGroup(data = mod_rec@data, group = mod_rec@groups, pars = mod_vals, TOL = NaN)
+  ref_vals <- mirt::mod2values(mirt::extract.group(mod_recon, group = group_names[[1]]))
+  ref_vals$value[ref_vals$name == "MEAN_1"] <- pooled_mean
+  ref_vals$value[ref_vals$name == "COV_11"] <- pooled_var
+  mirt::mirt(data = mod_rec@data, pars = ref_vals, TOL = NaN)
+}
+
+#' Scores from CAT
 #'
 #' @param runs run data from one task and one dataset
 #' @export
@@ -90,8 +119,9 @@ score_cat <- \(runs) {
     mutate(score_type = "ability_cat")
 }
 
-#' scores for PA -- deprecated
+#' Scores for PA -- deprecated
 #'
+#' @keywords internal
 #' @param trial_data_task trial data from one task and one dataset
 #' @param dataset dataset
 score_pa <- \(trial_data_task, dataset)  {
@@ -113,7 +143,7 @@ score_pa <- \(trial_data_task, dataset)  {
     mutate(score_type = "prop_correct")
 }
 
-#' scores for SRE
+#' Scores for SRE
 #'
 #' @param trial_data_task trial data from one task and one dataset
 #' @param dataset dataset
@@ -140,7 +170,7 @@ mod_spec_str <- \(spec) {
   spec[c("model_set", "subset", "itemtype", "nfact", "invariance")] |> purrr::discard(is.na) |> paste(collapse = "_")
 }
 
-#' score
+#' Score
 #' @export
 #'
 #' @param task task
