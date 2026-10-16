@@ -48,15 +48,17 @@ test_that("group_vals() models give the same EAP scores as mirt::extract.group()
 
 test_that("group_vals() models give the same MAP and ML scores as mirt::extract.group()", {
   # these scores are found by optimization, which turns last-bit differences in
-  # the parameters into differences on the order of the optimizer's tolerance;
-  # the warnings are for patterns that don't converge (e.g. all correct for ML)
+  # the parameters into differences on the order of the optimizer's tolerance,
+  # and can change which stopping code nlm() reports for a pattern (varies by
+  # platform), so converge_info_code is ignored; the warnings are for patterns
+  # that don't converge (e.g. all correct for ML)
   for (fx in multigroup_fixtures()) {
     patterns <- score_patterns(fx$resp)
     for (g in fx$mod_rec@group_names) {
       for (method in c("MAP", "ML")) {
         fs <- \(mod) suppressWarnings(mirt::fscores(mod, method = method, response.pattern = patterns))
         expect_equal(fs(group_model(fx$mod_rec, g)), fs(extract_group_model(fx$mod_rec, g)),
-                     tolerance = 1e-5)
+                     tolerance = 1e-5, ignore_attr = "converge_info_code")
       }
     }
   }
