@@ -66,7 +66,8 @@ score_irt <- \(trial_data_task, mod_spec, mod_rec, method = "EAP") {
   }
 
   # get scores from model
-  scores <- mirt::fscores(mod, method = method, response.pattern = data_aligned)
+  scores <- mirt::fscores(mod, method = method, response.pattern = data_aligned,
+                          full.scores.SE = TRUE)
 
   # return scores tibble with better names and run_ids added back in
   scores |>
