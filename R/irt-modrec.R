@@ -54,6 +54,56 @@ mod_coefs <- \(mod_rec, item_sep = "-") {
     arrange(.data$difficulty)
 }
 
+#' Item response function (3PL)
+#'
+#' @param theta ability
+#' @param a discrimination
+#' @param b difficulty
+#' @param c lower bound
+#'
+#' @keywords internal
+irf <- \(theta, a, b, c) {
+  c + (1 - c) / (1 + exp(-a * (theta - b)))
+}
+
+#' Fisher information
+#'
+#' @inheritParams irf
+#' @keywords internal
+info <- \(theta, a, b, c) {
+  p <- irf(theta, a, b, c)
+  a ^ 2 * (p - c) ^ 2 / (1 - c) ^ 2 * (1 - p) / p
+}
+
+#' Extract item information from a model record
+#' @inheritParams model_from_record
+#' @param theta Vector of latent trait values
+#' @export
+item_info <- \(mod_rec, theta = seq(-5, 5, by = .01)) {
+  mod_coefs(mod_rec) |>
+    select("group", "item", b = "difficulty", a = "a1", c = "g") |>
+    tidyr::expand_grid(theta) |>
+    mutate(info = info(.data$theta, .data$a, .data$b, .data$c))
+}
+
+#' Extract empirical reliability from a model record
+#' @inheritParams model_from_record
+#' @export
+empirical_reliability <- \(mod_rec) {
+  # extract scores and groups
+  mod_scores <- scores(mod_rec) |> mutate(group = mod_rec@groups)
+  # if there are any groups other than "all", create "all" union group
+  if (!all(mod_scores$group == "all")) {
+    mod_scores <- mod_scores |> mutate(group = "all") |> bind_rows(mod_scores)
+  }
+  # compute empirical reliability for each group
+  mod_scores |>
+    group_by(.data$group) |>
+    summarise(var_theta = stats::var(.data$ability),
+              mean_se2 = mean(.data$se ^ 2),
+              rxx = .data$var_theta / (.data$var_theta + .data$mean_se2))
+}
+
 #' Single group model with the pooled distribution of a multigroup model's groups
 #'
 #' For scoring data from a group that is not in a scalar multigroup model:
