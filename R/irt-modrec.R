@@ -114,7 +114,6 @@ empirical_reliability <- \(mod_rec) {
 #'
 #' @param mod_rec ModelRecord object for a scalar multigroup model
 #' @return mirt SingleGroupClass model
-#' @keywords internal
 pooled_group_model <- \(mod_rec) {
   mod_vals <- model_vals(mod_rec)
   group_names <- mod_rec@group_names
