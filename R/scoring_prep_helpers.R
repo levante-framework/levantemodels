@@ -175,7 +175,9 @@ recode_sds <- function(df) {
   # figure out which responses correspond to each trial
   sds_match_indexed <- sds_data |>
     filter(stringr::str_detect(.data$item_group, "match")) |>
-    mutate(different = stringr::str_detect(.data$item_original, "different")) |>
+    # later choices in a trial are prompted "...the same in a different way..."
+    # (to 2026-07) or "...the same in a new way..." (from 2026-08)
+    mutate(different = stringr::str_detect(.data$item_original, "different|new way")) |>
     group_by(.data$run_id, .data$item_group) |>
     arrange(.data$timestamp, .by_group = TRUE) |>
     # use positions of "choice1" to infer a trial index grouping choices together
