@@ -48,7 +48,15 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">score</span><span class="op">(</span><span class="va">task</span>, <span class="va">dataset</span>, <span class="va">trials</span>, <span class="va">runs</span>, <span class="va">scoring_table</span>, <span class="va">registry_dir</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">score</span><span class="op">(</span></span>
+<span>  <span class="va">task</span>,</span>
+<span>  <span class="va">dataset</span>,</span>
+<span>  <span class="va">trials</span>,</span>
+<span>  <span class="va">runs</span>,</span>
+<span>  <span class="va">scoring_table</span>,</span>
+<span>  <span class="va">registry_dir</span>,</span>
+<span>  exclusions <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -77,6 +85,11 @@
 
 <dt id="arg-registry-dir">registry_dir<a class="anchor" aria-label="anchor" href="#arg-registry-dir"></a></dt>
 <dd><p>redivis directory returned by fetch_registry_dir()</p></dd>
+
+
+<dt id="arg-exclusions">exclusions<a class="anchor" aria-label="anchor" href="#arg-exclusions"></a></dt>
+<dd><p>optional exclusion table (e.g. from fetch_exclusions()),
+applied to trials with apply_exclusions() before scoring</p></dd>
 
 </dl></div>
 

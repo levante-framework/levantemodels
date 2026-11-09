@@ -5,7 +5,15 @@ Score
 ## Usage
 
 ``` r
-score(task, dataset, trials, runs, scoring_table, registry_dir)
+score(
+  task,
+  dataset,
+  trials,
+  runs,
+  scoring_table,
+  registry_dir,
+  exclusions = NULL
+)
 ```
 
 ## Arguments
@@ -33,3 +41,8 @@ score(task, dataset, trials, runs, scoring_table, registry_dir)
 - registry_dir:
 
   redivis directory returned by fetch_registry_dir()
+
+- exclusions:
+
+  optional exclusion table (e.g. from fetch_exclusions()), applied to
+  trials with apply_exclusions() before scoring

@@ -56,6 +56,10 @@ are ready for scoring.
 Filter items and reshape trial data into the format expected by mirt,
 and specify model structure and invariance constraints.
 
+- [`apply_exclusions()`](https://levante-framework.github.io/levantemodels/reference/apply_exclusions.md)
+  : Remove excluded items from trial data
+- [`fetch_exclusions()`](https://levante-framework.github.io/levantemodels/reference/fetch_exclusions.md)
+  : Get item exclusions
 - [`dedupe_items()`](https://levante-framework.github.io/levantemodels/reference/dedupe_items.md)
   : Add identifiers for each instance of each item
 - [`remove_no_var_items()`](https://levante-framework.github.io/levantemodels/reference/remove_no_var_items.md)
