@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-score.R
 \name{score_irt}
 \alias{score_irt}
-\title{given trial data and model record, score data from corresponding model}
+\title{Given trial data and model record, score data from corresponding model}
 \usage{
 score_irt(trial_data_task, mod_spec, mod_rec, method = "EAP")
 }
@@ -19,5 +19,5 @@ score_irt(trial_data_task, mod_spec, mod_rec, method = "EAP")
 tibble with scores
 }
 \description{
-given trial data and model record, score data from corresponding model
+Given trial data and model record, score data from corresponding model
 }

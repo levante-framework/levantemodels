@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-registry.R
 \name{get_model_record}
 \alias{get_model_record}
-\title{get the model record indexed in registry_dir for a given scoring specification}
+\title{Get the model record indexed in registry_dir for a given scoring specification}
 \usage{
 get_model_record(spec, registry_dir)
 }
@@ -15,5 +15,7 @@ get_model_record(spec, registry_dir)
 ModelRecord object
 }
 \description{
-get the model record indexed in registry_dir for a given scoring specification
+Each model record is downloaded once per session and then reused. The cache
+holds one registry directory at a time: passing a different \code{registry_dir}
+(e.g. from a new call to \code{fetch_registry_dir()}) clears it.
 }

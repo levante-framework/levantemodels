@@ -1,0 +1,11 @@
+@font-face {
+	font-family: whitney-book;
+	src: url("whitney-book.otf");
+}
+
+/* whitney book is missing minus sign codepoint, add from another font */
+@font-face {
+  font-family: whitney-book;
+  src: url("SourceSansPro-Regular.ttf");
+  unicode-range: U+2212;
+}

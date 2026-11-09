@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-helpers.R
 \name{to_mirt_shape}
 \alias{to_mirt_shape}
-\title{format data for mirt}
+\title{Format data for mirt}
 \usage{
 to_mirt_shape(df)
 }
@@ -10,5 +10,5 @@ to_mirt_shape(df)
 \item{df}{trial data}
 }
 \description{
-format data for mirt
+Format data for mirt
 }

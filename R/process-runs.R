@@ -52,8 +52,8 @@ process_runs <- function(dataset_spec,
      LEFT JOIN users ON runs.user_id = users.user_id"
   )
 
-  runs <- levante:::get_datasets_data(
-    dataset_spec, levante:::query_getter("runs", query_str, max_results))
+  runs <- get_datasets_data(
+    dataset_spec, query_getter("runs", query_str, max_results))
 
   if (remove_invalid_runs) runs <- runs |> filter(.data$valid_run)
   if (remove_incomplete_runs) runs <- runs |> filter(.data$completed)

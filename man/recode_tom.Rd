@@ -2,7 +2,7 @@
 % Please edit documentation in R/scoring_prep_helpers.R
 \name{recode_tom}
 \alias{recode_tom}
-\title{recode items for ToM}
+\title{Recode items for ToM}
 \usage{
 recode_tom(df)
 }
@@ -10,5 +10,5 @@ recode_tom(df)
 \item{df}{trial data}
 }
 \description{
-recode items for ToM
+Recode items for ToM
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-registry.R
 \name{model_spec_filename}
 \alias{model_spec_filename}
-\title{convert model spec to filename}
+\title{Convert model spec to filename}
 \usage{
 model_spec_filename(spec)
 }
@@ -10,5 +10,5 @@ model_spec_filename(spec)
 \item{spec}{Model specification (list with names item_task, model_set, subset, itemtype, nfact, invariance).}
 }
 \description{
-convert model spec to filename
+Convert model spec to filename
 }

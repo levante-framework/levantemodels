@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-extract.R
 \name{multigroup_extract_groups}
 \alias{multigroup_extract_groups}
-\title{get groups out of multigroup model}
+\title{Get groups out of multigroup model}
 \usage{
 multigroup_extract_groups(mod)
 }
@@ -10,5 +10,5 @@ multigroup_extract_groups(mod)
 \item{mod}{fit mirt model (SingleGroupClass or MultiGroupClass object)}
 }
 \description{
-get groups out of multigroup model
+Get groups out of multigroup model
 }

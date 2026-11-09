@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-score.R
 \name{score}
 \alias{score}
-\title{score}
+\title{Score}
 \usage{
 score(
   task,
@@ -31,5 +31,5 @@ score(
 applied to trials with apply_exclusions() before scoring}
 }
 \description{
-score
+Score
 }

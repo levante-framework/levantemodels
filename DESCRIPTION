@@ -20,15 +20,15 @@ URL: https://levante-framework.github.io/levantemodels/
 Depends:
     R (>= 4.1.0)
 Imports:
-    dplyr,
+    dplyr (>= 1.2.0),
     glue,
-    levante,
     methods,
     purrr,
     redivis
 Suggests: 
     forcats,
     jsonlite,
+    levante,
     lubridate,
     readr,
     rlang,
@@ -39,7 +39,8 @@ Suggests:
     knitr,
     mirt,
     rmarkdown,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    withr
 Remotes:
     levante=levante-framework/levante-r,
     redivis=redivis/redivis-r

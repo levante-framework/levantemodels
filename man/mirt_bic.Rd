@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-extract.R
 \name{mirt_bic}
 \alias{mirt_bic}
-\title{get BIC of fitted mirt model}
+\title{Get BIC of fitted mirt model}
 \usage{
 mirt_bic(mod)
 }
@@ -10,5 +10,5 @@ mirt_bic(mod)
 \item{mod}{fit mirt model (SingleGroupClass or MultiGroupClass object)}
 }
 \description{
-get BIC of fitted mirt model
+Get BIC of fitted mirt model
 }

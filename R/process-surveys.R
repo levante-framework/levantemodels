@@ -9,7 +9,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' dataset_spec <- list(list(name = "levante_data_example:d0rt", version = "current"))
+#' dataset_spec <- list(list(name = "levante_data_example_raw:bm7r", version = "current"))
 #' surveys <- process_surveys(dataset_spec)
 #' }
 process_surveys <- function(dataset_spec,
@@ -17,15 +17,15 @@ process_surveys <- function(dataset_spec,
                             remove_incomplete_surveys = FALSE,
                             max_results = NULL) {
 
-  where_str <- levante:::build_filter("surveys.survey_type", survey_types, allow_null = TRUE)
+  where_str <- build_filter("surveys.survey_type", survey_types, allow_null = TRUE)
   query_str <- glue::glue(
     "SELECT * FROM survey_responses
      LEFT JOIN surveys ON survey_responses.survey_id = surveys.survey_id
       {where_str}"
   )
 
-  surveys <- levante:::get_datasets_data(
-    dataset_spec, levante:::query_getter("survey_responses", query_str, max_results))
+  surveys <- get_datasets_data(
+    dataset_spec, query_getter("survey_responses", query_str, max_results))
 
   if (nrow(surveys) == 0) return()
 
@@ -53,10 +53,13 @@ add_survey_items <- function(surveys) {
   suppressWarnings(
     survey_items_coded <- survey_items |>
       rename(question = "variable", question_order = "variable_order") |>
-      mutate(values = if_else(is.na(.data$values) | .data$values == "", "[]", .data$values),
+      mutate(values = .data$response_options,
+             values = if_else(is.na(.data$values) | .data$values == "", "[]", .data$values),
              values = .data$values |> purrr::map(jsonlite::fromJSON) |>
                purrr::map(\(v) if (length(v) == 0) v else replace_values(v, "No" ~ "0", "Yes" ~ "1")) |>
-               purrr::map(as.numeric))
+               purrr::map(as.numeric)) |>
+      mutate(reverse_coded = .data$reverse_coded |> as.logical() |> tidyr::replace_na(FALSE),
+             construct_sdq = .data$construct_sdq |> as.logical())
   )
 
   surveys |>
@@ -82,6 +85,7 @@ code_survey_data <- function(surveys) {
            "survey_schema_source", "specific_scope", "specific_scope_id",
            "administration_id", "user_id", contains("construct"),
            "question_type", "question_order", "question_text" = "item_text",
+           "response_options", "response_options_text",
            "question", "value", "boolean_response", "string_response",
            "numeric_response", "survey_timestamp" = "created_at",
            "response_timestamp" = "timestamp", "is_complete", "valid_survey",

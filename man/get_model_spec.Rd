@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-registry.R
 \name{get_model_spec}
 \alias{get_model_spec}
-\title{get the scoring specification in scoring_table for a given task + dataset}
+\title{Get the scoring specification in scoring_table for a given task + dataset}
 \usage{
 get_model_spec(score_task, score_dataset, scoring_table)
 }
@@ -17,5 +17,5 @@ get_model_spec(score_task, score_dataset, scoring_table)
 list with entries item_task, dataset, model_set, subset, itemtype, nfact, invariance
 }
 \description{
-get the scoring specification in scoring_table for a given task + dataset
+Get the scoring specification in scoring_table for a given task + dataset
 }

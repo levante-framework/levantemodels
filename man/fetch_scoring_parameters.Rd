@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-registry.R
 \name{fetch_scoring_parameters}
 \alias{fetch_scoring_parameters}
-\title{Fetch scoring specification table}
+\title{Fetch scoring parameters table}
 \usage{
 fetch_scoring_parameters(version = "current")
 }
@@ -10,5 +10,5 @@ fetch_scoring_parameters(version = "current")
 \item{version}{Version tag of the \code{levante_metadata_scoring} dataset.}
 }
 \description{
-Fetch scoring specification table
+Fetch scoring parameters table
 }

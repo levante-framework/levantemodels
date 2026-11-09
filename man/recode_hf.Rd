@@ -2,7 +2,7 @@
 % Please edit documentation in R/scoring_prep_helpers.R
 \name{recode_hf}
 \alias{recode_hf}
-\title{recode correctness + reclassify items for HF}
+\title{Recode correctness + reclassify items for HF}
 \usage{
 recode_hf(df)
 }
@@ -10,5 +10,5 @@ recode_hf(df)
 \item{df}{trial data}
 }
 \description{
-recode correctness + reclassify items for HF
+Recode correctness + reclassify items for HF
 }
