@@ -187,6 +187,7 @@ add_item_ids <- function(trials, metadata_version = "current") {
       stringr::str_replace("^mrot_(.*)_320", "mrot_\\1_040") |>
       stringr::str_replace("^tom_ha_", "ha_") |>
       stringr::str_replace("^vocab__", "vocab_word_") |>
+      stringr::str_replace("^matrix_set0_md_mat(\\d+)$", "matrix_downex_item\\1") |>
       forcats::fct_recode(!!!itembank_recodes) |>
       as.character() |>
       na_if("_") |>
