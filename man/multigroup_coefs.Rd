@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-extract.R
 \name{multigroup_coefs}
 \alias{multigroup_coefs}
-\title{get coefficients for multigroup model}
+\title{Get coefficients for multigroup model}
 \usage{
 multigroup_coefs(mod)
 }
@@ -10,5 +10,5 @@ multigroup_coefs(mod)
 \item{mod}{fit mirt model (SingleGroupClass or MultiGroupClass object)}
 }
 \description{
-get coefficients for multigroup model
+Get coefficients for multigroup model
 }

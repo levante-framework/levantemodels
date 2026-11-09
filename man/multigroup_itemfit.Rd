@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-extract.R
 \name{multigroup_itemfit}
 \alias{multigroup_itemfit}
-\title{get item fits out of multigroup model}
+\title{Get item fits out of multigroup model}
 \usage{
 multigroup_itemfit(submods, fit_stats)
 }
@@ -12,5 +12,5 @@ multigroup_itemfit(submods, fit_stats)
 \item{fit_stats}{character vector indicating which fit statistics should be computed}
 }
 \description{
-get item fits out of multigroup model
+Get item fits out of multigroup model
 }

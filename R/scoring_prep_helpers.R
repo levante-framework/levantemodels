@@ -44,9 +44,10 @@ recode_trials <- \(df, slider_threshold = 0.15) {
            chance = .data$chance |> tidyr::replace_na(0))
 }
 
-#' recode correctness + reclassify items for HF
+#' Recode correctness + reclassify items for HF
 #'
 #' @inheritParams recode_trials
+#' @export
 recode_hf <- \(df) {
   message("Recoding hearts and flowers trials")
   hf_trials <- df |>
@@ -73,9 +74,10 @@ recode_hf <- \(df) {
     bind_rows(hf_trials)
 }
 
-#' recode correctness for slider
+#' Recode correctness for slider
 #'
 #' @inheritParams recode_trials
+#' @export
 recode_slider <- \(df, slider_threshold) {
   message("Recoding math slider trials")
   slider_trials <- df |>
@@ -96,10 +98,11 @@ recode_slider <- \(df, slider_threshold) {
     bind_rows(slider_trials)
 }
 
-#' recode correctness for items with wrong answers
+#' Recode correctness for items with wrong answers
 #'
 #' @inheritParams recode_trials
 #' @param wrong_items tibble with columns item_uid and answer_fixed
+#' @export
 recode_wrong_items <- \(df, wrong_items) {
   # inner_join (not right_join): only recode wrong-answer items that are
   # actually present. right_join would keep unmatched wrong_items keys, adding
@@ -113,9 +116,10 @@ recode_wrong_items <- \(df, wrong_items) {
     select(-"answer_fixed")
 }
 
-#' recode items for ToM
+#' Recode items for ToM
 #'
 #' @inheritParams recode_trials
+#' @export
 recode_tom <- \(df) {
   message("Recoding theory of mind trials")
   tom <- df |> filter(.data$item_task == "tom")
@@ -128,9 +132,10 @@ recode_tom <- \(df) {
     bind_rows(tom_disagg)
 }
 
-#' recode correctness for SDS
+#' Recode correctness for SDS
 #'
 #' @inheritParams recode_trials
+#' @export
 recode_sds <- function(df) {
 
   message("Recoding same different selection trials")
@@ -170,7 +175,9 @@ recode_sds <- function(df) {
   # figure out which responses correspond to each trial
   sds_match_indexed <- sds_data |>
     filter(stringr::str_detect(.data$item_group, "match")) |>
-    mutate(different = stringr::str_detect(.data$item_original, "different")) |>
+    # later choices in a trial are prompted "...the same in a different way..."
+    # (to 2026-07) or "...the same in a new way..." (from 2026-08)
+    mutate(different = stringr::str_detect(.data$item_original, "different|new way")) |>
     group_by(.data$run_id, .data$item_group) |>
     arrange(.data$timestamp, .by_group = TRUE) |>
     # use positions of "choice1" to infer a trial index grouping choices together
@@ -205,33 +212,36 @@ recode_sds <- function(df) {
   # escape hatch if no valid data remains
   if (nrow(sds_match) == 0) return(non_match)
 
-  # parse response and options strings into vectors of stimuli
-  sds_opts <- sds_match |>
+  # code each distinct response + options pair once (many trials share them)
+  sds_pairs <- sds_match |>
+    distinct(.data$resp, .data$opts) |>
+    # parse response and options strings into vectors of stimuli
     mutate(resp_parsed = .data$resp |> purrr::map(parse_response) |> purrr::map(sort),
-           opts_parsed = .data$opts |> purrr::map(parse_response) |> purrr::map(sort))
-
-  # code dimension values for each stimulus in response and options
-  sds_coded <- sds_opts |>
+           opts_parsed = .data$opts |> purrr::map(parse_response) |> purrr::map(sort)) |>
+    # code dimension values for each stimulus in response and options
     mutate(resp_coded = purrr::map(.data$resp_parsed, code_dims),
-           opts_coded = purrr::map(.data$opts_parsed, code_dims))
-
-  # match response and options to figure out set of possible matches
-  sds_dims <- sds_coded |>
+           opts_coded = purrr::map(.data$opts_parsed, code_dims)) |>
+    # match response and options to figure out set of possible matches
     mutate(opts_dims = purrr::map(.data$opts_coded, match_opts_dims),
            resp_dims = purrr::map2(.data$resp_coded, .data$opts_dims, match_resp_dims)) |>
-    mutate(n_matches = purrr::map_int(.data$opts_dims, sum))
-
-  # determine outcomes of each trial – was the response a match + was the response new
-  sds_correct <- sds_dims |>
+    mutate(n_matches = purrr::map_int(.data$opts_dims, sum)) |>
     mutate(resp_norm = purrr::map_chr(.data$resp_parsed, \(s) paste(s, collapse = " "))) |>
     mutate(subtrial_match = purrr::map_int(.data$resp_dims, length) > 0) |>
-    select("run_id", "item_group", "match_k", "n_matches", "trial_index",
-           "trial_id", "choice_i", "resp_norm", "subtrial_match") |>
-    tidyr::nest(trials = c("trial_id", "choice_i", "resp_norm", "subtrial_match")) |>
-    mutate(new = purrr::map(.data$trials, \(tr) purrr::map_lgl(1:nrow(tr), \(i) i == 1 | !(tr$resp_norm[i] %in% tr$resp_norm[1:(i-1)]))),
-           correct = purrr::map2(.data$trials, .data$new, \(tr, ne) tr |> mutate(new = ne, correct = .data$subtrial_match & new))) |>
-    select(-"new", -"trials") |>
-    tidyr::unnest("correct") |>
+    select("resp", "opts", "n_matches", "resp_norm", "subtrial_match")
+
+  # determine outcomes of each trial – was the response a match + was the response new
+  trial_vars <- c("run_id", "item_group", "match_k", "n_matches", "trial_index")
+  sds_correct <- sds_match |>
+    left_join(sds_pairs, by = c("resp", "opts")) |>
+    select(all_of(trial_vars), "trial_id", "choice_i", "resp_norm", "subtrial_match") |>
+    mutate(row = row_number()) |>
+    # response is new if no earlier response in the same trial was the same
+    mutate(new = !duplicated(.data$resp_norm), trial_start = min(.data$row),
+           .by = all_of(trial_vars)) |>
+    mutate(correct = .data$subtrial_match & .data$new) |>
+    # make each trial's rows contiguous, with trials in order of first appearance
+    arrange(.data$trial_start, .data$row) |>
+    select(-"row", -"trial_start") |>
     filter(.data$match_k == .data$n_matches)
 
   # determine the item status at each response (counts of previous matches and non-matches)

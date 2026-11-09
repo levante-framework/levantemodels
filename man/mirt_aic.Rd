@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-extract.R
 \name{mirt_aic}
 \alias{mirt_aic}
-\title{get AIC of fitted mirt model}
+\title{Get AIC of fitted mirt model}
 \usage{
 mirt_aic(mod)
 }
@@ -10,5 +10,5 @@ mirt_aic(mod)
 \item{mod}{fit mirt model (SingleGroupClass or MultiGroupClass object)}
 }
 \description{
-get AIC of fitted mirt model
+Get AIC of fitted mirt model
 }

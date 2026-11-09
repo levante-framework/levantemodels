@@ -1,0 +1,294 @@
+---
+title: "Fitting IRT models"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Fitting IRT models}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+> **Note:** The content of this vignette was generated using Claude agents and then reviewed by package authors.
+
+LEVANTE task scores are ability estimates from item response theory (IRT)
+models fit with [`mirt`](https://cran.r-project.org/package=mirt). This
+vignette shows how to fit those models for one task with `levantemodels`: what
+the input data looks like, the calls that fit the models, and how to work with
+the model files they write. (For scoring data against models that have
+already been fit, see `vignette("scoring-and-model-registry")`.)
+
+The vignette uses simulated data so that it runs offline in a few seconds. The
+last section shows how to build the same input from real LEVANTE data.
+
+```{r setup, message = FALSE}
+library(levantemodels)
+library(dplyr)
+library(tidyr)
+```
+
+## Input data
+
+The fitting functions take trial-level data **nested by task and by group**:
+one row per combination of task and grouping variables, with the trials in a
+list-column called `data`.
+
+Here we simulate a 4-alternative task (`chance = 0.25`) given at two sites.
+Children at `site_a` (English) saw 15 items, and children at `site_b` (German)
+saw only the first 12 of them. Responses follow a 2PL model with a guessing
+floor at chance.
+
+```{r simulate}
+set.seed(1)
+
+items <- tibble(
+  item_uid = sprintf("matrix_%02d", 1:15),
+  a = rlnorm(15, 0, 0.3),              # discrimination
+  b = seq(-2, 2, length.out = 15),     # difficulty
+  chance = 0.25
+)
+
+simulate_site <- \(dataset, language, n_runs, theta_mean, item_uids) {
+  tibble(dataset, language,
+         run_id = paste0(dataset, "_run", 1:n_runs),
+         theta = rnorm(n_runs, theta_mean)) |>
+    cross_join(filter(items, item_uid %in% item_uids)) |>
+    mutate(p = chance + (1 - chance) * plogis(a * (theta - b)),
+           correct = runif(n()) < p) |>
+    select(dataset, language, run_id, item_uid, chance, correct)
+}
+
+trials <- bind_rows(
+  simulate_site("site_a", "en-US", 400, 0.0, items$item_uid),
+  simulate_site("site_b", "de-DE", 300, 0.5, items$item_uid[1:12])
+)
+
+task_data <- trials |>
+  mutate(item_task = "matrix") |>
+  nest(data = -c(item_task, dataset, language))
+
+task_data
+```
+
+Each element of `data` holds one row per trial:
+
+```{r inner-data}
+task_data$data[[1]]
+```
+
+The columns the fitting functions need are:
+
+| Column | Level | Contents |
+|---|---|---|
+| `item_task` | outer | task name, used to select a task and to name output files |
+| grouping variable(s) | outer | e.g. `language`, `dataset`, `site`: what models are fit separately for, or what groups multigroup models compare |
+| `run_id` | `data` | one task administration; each run becomes one row of the response matrix |
+| `item_uid` | `data` | item identifier; an item that is answered more than once in a run is treated as several instances whose parameters are constrained to be equal |
+| `correct` | `data` | response (logical or 0/1); `NA` responses are dropped |
+| `chance` | `data` | chance level for the item, used as its fixed lower asymptote (guessing parameter) |
+
+Before fitting, items with no variance in responses are dropped. For
+multigroup models, items without variance within some group are also dropped.
+
+## Specifying the models
+
+Models are specified as a data frame with one row per model. For *pooled*
+models (fit separately for each subset of the data) the columns are `nfact`
+(number of factors) and `itemtype` (`"Rasch"` or `"2PL"`). For *multigroup*
+models there's also `invariance`, which says what is constrained to be equal
+across groups:
+
+- `"configural"`: nothing is shared, so each group has its own item
+  parameters.
+- `"metric"`: slopes are shared.
+- `"scalar"`: slopes and intercepts are shared, and group means and variances
+  are freely estimated.
+
+(See `invariances` for the mapping to `mirt` arguments.)
+
+```{r models}
+models_pooled <- tribble(
+  ~nfact, ~itemtype,
+       1,   "Rasch",
+       1,     "2PL"
+)
+
+models_multigroup <- tribble(
+  ~nfact, ~itemtype, ~invariance,
+       1,   "Rasch", "configural",
+       1,   "Rasch", "scalar",
+       1,     "2PL", "configural",
+       1,     "2PL", "metric",
+       1,     "2PL", "scalar"
+)
+```
+
+Priors are a named list: each name is a `mirt` parameter, and each value
+gives the prior type and its two parameters. These are the priors that
+LEVANTE uses:
+
+```{r priors}
+priors <- list(d = c("norm", 0, 3), a1 = c("norm", 1, 0.3))
+```
+
+## Fitting
+
+The fitting functions write each fitted model to `registry_dir` as a
+`ModelRecord` saved in an `.rds` file, and they are called for this side
+effect. Models are fit with verbose `mirt` output, which we hide here.
+
+```{r registry-dir, eval = FALSE}
+registry_dir <- "model_registry"
+```
+
+```{r registry-dir-temp, include = FALSE}
+# when building the vignette, write models to a temporary directory instead
+registry_dir <- file.path(tempdir(), "model_registry")
+```
+
+**Pooled models by language.** `fit_bylanguage_task()` fits every model in
+`models_pooled` separately for each language in the data.
+`fit_task_models_pooled()` does the same for a single subset of any
+variable, e.g. `subset_var = dataset, subset_val = "site_a"`.
+
+```{r fit-pooled, results = "hide", message = FALSE}
+fit_bylanguage_task(task_data, models = models_pooled, priors = priors,
+                    task = "matrix", registry_dir = registry_dir)
+```
+
+**Multigroup models.** `fit_task_models_multigroup()` fits one model with
+every level of `group` as a group, for each row of `models_multigroup`:
+
+```{r fit-multigroup, results = "hide", message = FALSE}
+fit_task_models_multigroup(task_data, models = models_multigroup,
+                           priors = priors, task = "matrix", group = dataset,
+                           registry_dir = registry_dir)
+```
+
+Each multigroup specification is fit in up to two steps:
+
+1. **`overlap_items/`**: a model fit to just the items that every group saw
+   (here, the 12 items common to both sites).
+2. **`all_items/`**: a model fit to all items. Parameters for the overlapping
+   items are fixed at their values from step 1, so these items anchor the
+   scale and the remaining items are calibrated onto it. This step is skipped
+   for configural models, since they put no constraints across groups.
+
+The resulting registry:
+
+```{r registry-tree}
+list.files(registry_dir, recursive = TRUE)
+```
+
+Paths follow the pattern `{task}/{model_set}/{subset}/{task}_{itemtype}_f{nfact}[_{invariance}].rds`.
+This is the same layout as the LEVANTE model registry on Redivis: each row of
+the scoring table (`fetch_scoring_table()`) gives a `model_set`, `subset`,
+`itemtype`, `nfact`, and `invariance`, and `model_spec_filename()` turns these
+into a path in this layout.
+
+## Working with model files
+
+Each file contains a `ModelRecord`, a lightweight record of the fitted
+model that holds its parameters, the data it was fit to, its fit statistics,
+and the EAP ability scores for the data it was fit to.
+
+```{r read}
+mod_rec <- readRDS(file.path(registry_dir,
+                             "matrix/multigroup_dataset/all_items/matrix_2pl_f1_scalar.rds"))
+mod_rec
+```
+
+**Item parameters.** `mod_coefs()` returns one row per item and group, with
+slope (`a1`), intercept (`d`), lower and upper asymptotes (`g`, `u`),
+difficulty on the IRT scale (`-d / a1`), and the number of responses to the
+item. Under scalar invariance the parameters are the same for both groups.
+Items 13–15 have no responses from `site_b`, but they still get that group's
+(shared) parameters.
+
+```{r coefs}
+mod_coefs(mod_rec)
+```
+
+**Ability scores.** `scores()` returns EAP ability estimates and their
+standard errors for each run the model was fit to:
+
+```{r scores}
+scores(mod_rec)
+```
+
+As a check, the estimates approximately recover the simulated difference between sites
+(`site_b` was simulated 0.5 SD higher):
+
+```{r scores-by-site}
+scores(mod_rec) |>
+  mutate(group = mod_rec@groups) |>
+  summarise(mean_ability = mean(ability), .by = group)
+```
+
+**Model comparison.** `AIC()`, `BIC()`, and `logLik()` work on a
+`ModelRecord`. Models are only comparable when they're fit to the same data,
+so here we compare the five `overlap_items` models:
+
+```{r compare}
+overlap_dir <- file.path(registry_dir, "matrix/multigroup_dataset/overlap_items")
+overlap_files <- list.files(overlap_dir, full.names = TRUE)
+
+tibble(model = basename(overlap_files),
+       mod_rec = lapply(overlap_files, readRDS)) |>
+  mutate(logLik = sapply(mod_rec, logLik),
+         AIC = sapply(mod_rec, AIC),
+         BIC = sapply(mod_rec, BIC)) |>
+  select(-mod_rec) |>
+  arrange(BIC)
+```
+
+**Other `mirt` functions.** A `ModelRecord` doesn't store the full `mirt`
+model object. `model_from_record()` rebuilds it from the stored parameters
+and data (without re-estimating anything), so you can use other `mirt`
+functions, e.g. for item fit or plots:
+
+```{r mirt}
+mod <- model_from_record(mod_rec)
+mirt::itemfit(mirt::extract.group(mod, group = "site_a"))
+```
+
+Other contents are available as slots, e.g. `mod_rec@data` (the response
+matrix, with columns in `items(mod_rec)` order), `mod_rec@groups` (group of
+each row), and `model_vals(mod_rec)` (the full `mirt::mod2values()`
+parameter table).
+
+## Using real LEVANTE data
+
+To fit models to real data, build `task_data` from the raw (unprocessed)
+per-site LEVANTE datasets. `process_trials()` loads their trials, drops
+practice trials, incomplete runs, and invalid runs, and adds item identifiers
+and metadata. Language comes from the run data and dataset from the
+participant data, and `recode_trials()` then makes the trials ready for
+scoring:
+
+```{r real-data, eval = FALSE}
+dataset_spec <- list(
+  list(name = "pilot_western_ca_main_raw:97mt", version = "v15_28")
+)
+
+runs <- process_runs(dataset_spec)
+participants <- process_participants(dataset_spec)
+
+task_data <- process_trials(dataset_spec) |>
+  left_join(runs |> select(run_id, language), by = "run_id") |>
+  left_join(participants |> select(user_id, dataset), by = "user_id") |>
+  recode_trials() |>
+  nest(data = -c(item_task, dataset, language))
+```
+
+The production LEVANTE models also apply further exclusions before fitting
+(e.g. duplicate runs, straightlining, responses that are too fast or too slow,
+and items flagged for exclusion). These exclusions are applied in the
+`levante-pilots` repository, in `01_fetch_data/02_scoring_prep.qmd`, and the
+models are fit in `02_score_data/01_fit_irt/01_fit_irt_modular.qmd`, which
+runs the fits above for every task in parallel.

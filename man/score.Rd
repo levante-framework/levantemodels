@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-score.R
 \name{score}
 \alias{score}
-\title{score}
+\title{Score}
 \usage{
 score(task, dataset, trials, runs, scoring_table, registry_dir)
 }
@@ -20,5 +20,5 @@ score(task, dataset, trials, runs, scoring_table, registry_dir)
 \item{registry_dir}{redivis directory returned by fetch_registry_dir()}
 }
 \description{
-score
+Score
 }

@@ -2,25 +2,33 @@
 % Please edit documentation in R/irt-fit.R
 \name{fit_bylanguage_task}
 \alias{fit_bylanguage_task}
-\title{wrapper: given task, fit by_language model for each language}
+\title{Wrapper: given task, fit by_language model for each language}
 \usage{
 fit_bylanguage_task(task_data, models, priors, task, registry_dir)
 }
 \arguments{
-\item{task_data}{dataframe with columns item_task, the value of subset_var,
-and data, where data is trial-level data}
+\item{task_data}{data frame nested by task and grouping variables, with
+columns \code{item_task}, the grouping variable(s) (e.g. \code{language},
+\code{dataset}), and \code{data}, a list-column of trial-level data frames with
+(at least) columns \code{run_id}, \code{item_uid}, \code{correct} (logical or 0/1), and
+\code{chance} (chance level of the item)}
 
-\item{models}{dataframe of models to fit, specified with columns nfact
-(number of factors), itemtype (Rasch/2PL), invariance
-(configural/metric/scalar)}
+\item{models}{data frame of models to fit, one per row, with columns
+\code{nfact} (number of factors) and \code{itemtype} (\code{"Rasch"} or \code{"2PL"}), and
+no other columns}
 
 \item{priors}{list of priors, where names are parameter names (e.g. d, a1)
-and values are vectors of length 3 (priorType, val1, val2)}
+and values are vectors of length 3 (priorType, val1, val2), e.g.
+\code{list(d = c("norm", 0, 3), a1 = c("norm", 1, 0.3))}}
 
 \item{task}{one value in item_task}
 
 \item{registry_dir}{string indicating directory in which to save models}
 }
+\value{
+Called for its side effect of writing model files.
+}
 \description{
-wrapper: given task, fit by_language model for each language
+Calls \code{\link[=fit_task_models_pooled]{fit_task_models_pooled()}} with \code{subset_var = "language"} for each
+language present for \code{task}, so \code{task_data} must have a \code{language} column.
 }

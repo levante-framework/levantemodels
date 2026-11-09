@@ -2,7 +2,7 @@
 % Please edit documentation in R/irt-helpers.R
 \name{generate_model_str_numeric}
 \alias{generate_model_str_numeric}
-\title{generates mirt model strings}
+\title{Generates mirt model strings}
 \usage{
 generate_model_str_numeric(
   df,
@@ -30,5 +30,5 @@ generate_model_str_numeric(
 string that can be passed to \code{mirt.model()} as \code{input}
 }
 \description{
-generates mirt model strings
+Generates mirt model strings
 }

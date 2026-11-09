@@ -8,6 +8,17 @@
 \description{
 Internal tooling for processing LEVANTE data and fitting and serving its psychometric (IRT) scoring models. Holds the trial recoding, scoring pipeline, model registry, and ModelRecord machinery. For loading LEVANTE data, see the levante package.
 }
+\section{Options}{
+
+\itemize{
+\item \code{levantemodels.cache_dir}: directory in which to cache the metadata tables
+fetched from \code{levante_metadata_items} and \code{levante_metadata_scoring}
+(\code{fetch_corpus_items()}, \code{fetch_scoring_table()}, etc.), so that later
+sessions read them from disk instead of downloading them again. Only
+released dataset versions are cached. Defaults to \code{NULL} (no caching).
+}
+}
+
 \seealso{
 Useful links:
 \itemize{

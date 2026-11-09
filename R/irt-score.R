@@ -1,4 +1,4 @@
-#' given trial data and model record, score data from corresponding model
+#' Given trial data and model record, score data from corresponding model
 #'
 #' @param trial_data_task trial data from one task and one dataset
 #' @param mod_spec list with entries item_task, dataset, model_set, subset, itemtype, nfact, invariance
@@ -15,17 +15,23 @@ score_irt <- \(trial_data_task, mod_spec, mod_rec, method = "EAP") {
   data_prepped <- data_wide |> select(-"group")
   groups <- data_wide |> pull("group")
   data_group <- unique(groups)
+  stopifnot("trial data must be from one dataset" = length(data_group) == 1)
 
   # handle data having groups that aren't in model
+  new_group <- FALSE
   if (any(!(data_group %in% mod_rec@group_names))) {
     # for metric or configural models, scoring not possible
     if (!is.na(mod_spec$invariance) & mod_spec$invariance %in% c("metric", "configural")) {
       message(glue::glue("For scoring with {mod_spec$invariance} models, all groups in data must be in specified model."))
       return()
-      # for scalar models, scoring using any group should be equivalent
+      # for scalar models, item parameters are shared across groups, but each
+      # group has its own mean and variance, so score under the pooled
+      # distribution of the model's groups
     } else if (!is.na(mod_spec$invariance) & mod_spec$invariance == "scalar") {
-      # TODO: scoring from first group not actually equivalent because of group-specific means and variances, unclear how to handle
-      data_group <- mod_rec@group_names[[1]]
+      new_group <- TRUE
+      # for multigroup models with unspecified invariance, scoring not possible
+    } else if (model_class(mod_rec) == "MultipleGroupClass") {
+      stop(glue::glue("Can't score group {data_group}, which is not in the multigroup model and the model's invariance is not specified."))
     }
   }
 
@@ -48,19 +54,20 @@ score_irt <- \(trial_data_task, mod_spec, mod_rec, method = "EAP") {
   stopifnot(identical(colnames(data_aligned), items(mod_rec)))
 
   # set up mirt model object for data using parameter values from model record
-  mod_vals <- model_vals(mod_rec)
   if (model_class(mod_rec) == "SingleGroupClass") {
     # reconstruct single group model
-    mod <- mirt::mirt(data = mod_rec@data, pars = mod_vals, TOL = NaN)
+    mod <- model_from_record(mod_rec)
+  } else if (model_class(mod_rec) == "MultipleGroupClass" && new_group) {
+    # data's group not in model: score under the pooled distribution of the model's groups
+    mod <- pooled_group_model(mod_rec)
   } else if (model_class(mod_rec) == "MultipleGroupClass") {
-    # reconstruct multiple group model
-    mod_recon <- mirt::multipleGroup(data = mod_rec@data, group = mod_rec@groups, pars = mod_vals, TOL = NaN)
-    # extract single group model for given group
-    mod <- mirt::extract.group(mod_recon, group = data_group)
+    # single group model for the data's group
+    mod <- mirt::mirt(data = mod_rec@data, pars = group_vals(mod_rec, data_group), TOL = NaN)
   }
 
   # get scores from model
-  scores <- mirt::fscores(mod, method = method, response.pattern = data_aligned)
+  scores <- mirt::fscores(mod, method = method, response.pattern = data_aligned,
+                          full.scores.SE = TRUE)
 
   # return scores tibble with better names and run_ids added back in
   scores |>
@@ -72,7 +79,7 @@ score_irt <- \(trial_data_task, mod_spec, mod_rec, method = "EAP") {
            registry_version = stringr::str_extract(mod_spec$redivis_source, "(?<=:)[^:]*$"))
 }
 
-#' scores from CAT
+#' Scores from CAT
 #'
 #' @param runs run data from one task and one dataset
 #' @export
@@ -84,8 +91,9 @@ score_cat <- \(runs) {
     mutate(score_type = "ability_cat")
 }
 
-#' scores for PA -- deprecated
+#' Scores for PA -- deprecated
 #'
+#' @keywords internal
 #' @param trial_data_task trial data from one task and one dataset
 #' @param dataset dataset
 score_pa <- \(trial_data_task, dataset)  {
@@ -107,7 +115,7 @@ score_pa <- \(trial_data_task, dataset)  {
     mutate(score_type = "prop_correct")
 }
 
-#' scores for SRE
+#' Scores for SRE
 #'
 #' @param trial_data_task trial data from one task and one dataset
 #' @param dataset dataset
@@ -117,7 +125,7 @@ score_sre <- \(trial_data_task, dataset) {
 
   trial_data_task |>
     group_by(.data$dataset, .data$run_id) |>
-    summarise(elapsed = difftime(max(timestamp), min(timestamp), units = "sec"),
+    summarise(elapsed = difftime(max(.data$timestamp), min(.data$timestamp), units = "sec"),
               net = sum(.data$correct) - sum(!.data$correct),
               score = .data$net / as.numeric(.data$elapsed),
               .groups = "drop") |>
@@ -134,7 +142,7 @@ mod_spec_str <- \(spec) {
   spec[c("model_set", "subset", "itemtype", "nfact", "invariance")] |> purrr::discard(is.na) |> paste(collapse = "_")
 }
 
-#' score
+#' Score
 #' @export
 #'
 #' @param task task
