@@ -251,13 +251,21 @@ add_item_ids <- function(trials, metadata_version = "current") {
     mutate(item_uid_source = split(trials_sources$item_uid_source,
                                    group_indices(trials_sources)) |> unname())
 
-  # validate that no trial maps to multiple conflicting item IDs
+  # validate that no trial maps to multiple conflicting item IDs (otherwise the
+  # trial would be duplicated, once per item ID, by the join below)
   conflicts <- trials_mapped |>
     filter(duplicated(.data$trial_id) | duplicated(.data$trial_id, fromLast = TRUE))
   if (nrow(conflicts) > 0) {
-    warning(glue::glue("{n_distinct(conflicts$trial_id)} trial(s) map to multiple ",
-                       "conflicting item IDs and may be scored incorrectly"),
-            call. = FALSE)
+    examples <- conflicts |>
+      mutate(uid_str = glue::glue("{item_uid} ({purrr::map_chr(item_uid_source, paste, collapse = ', ')})")) |>
+      group_by(.data$trial_id) |>
+      summarise(str = paste0(.data$trial_id[1], ": ", paste(.data$uid_str, collapse = " vs "))) |>
+      utils::head(10) |>
+      pull("str")
+    stop(glue::glue("{n_distinct(conflicts$trial_id)} trial(s) map to multiple conflicting ",
+                    "item IDs; fix the item ID sources (first 10 shown):\n",
+                    paste(examples, collapse = "\n")),
+         call. = FALSE)
   }
 
   # join mapped trials back into overall trials
