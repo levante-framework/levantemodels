@@ -62,6 +62,18 @@ test_that("fix_tom_item_uids() leaves other epochs and other tasks untouched", {
   expect_equal(fix_tom_item_uids(other), other)
 })
 
+test_that("fix_tom_item_uids() epochs are in UTC whatever the local time zone", {
+  withr::local_timezone("America/Los_Angeles")
+  # just after the item-bank epoch starts in UTC (still the day before in local time)
+  start <- tom_trials(item = "2d", answer = "shelf", item_uid = "tom_moral_reasoning_false_belief",
+                      ts = "2025-05-09 03:00:00")
+  expect_equal(fix_tom_item_uids(start)$item_uid, "tom_moral_reasoning_false_belief_1")
+  # just after it ends in UTC
+  end <- tom_trials(item = "2d", answer = "shelf", item_uid = "tom_moral_reasoning_false_belief",
+                    ts = "2026-05-01 03:00:00")
+  expect_equal(fix_tom_item_uids(end), end)
+})
+
 test_that("add_item_ids() applies the ToM item UID fixes", {
   local_mocked_bindings(
     fetch_item_mapping_trial = \(...) tibble(item_uid = "x_uid", trials = '["t_other"]'),

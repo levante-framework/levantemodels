@@ -68,13 +68,16 @@ process_trials <- function(dataset_spec,
   trials_prelim <- process_trials_prelim(dataset_spec = dataset_spec,
                                          remove_incomplete_runs = remove_incomplete_runs,
                                          remove_invalid_runs = remove_invalid_runs,
-                                         remove_invalid_trials = remove_invalid_trials,
+                                         # invalid trials removed after item IDs,
+                                         # since ToM item ID fixes need whole runs
+                                         remove_invalid_trials = FALSE,
                                          tasks = tasks,
                                          participants = participants,
                                          max_results = max_results)
   trials_prelim |>
     remove_practice_trials() |>
     add_item_ids() |>
+    filter(!remove_invalid_trials | .data$valid_trial) |>
     add_item_metadata() |>
     add_trial_numbers() |>
     mutate(task_id = .data$task_id |> stringr::str_remove("-es|-de$")) |>
@@ -309,7 +312,9 @@ fix_tom_item_uids <- \(trials) {
     mutate(occurrence = row_number()) |>
     ungroup() |>
     inner_join(tom_uid_fixes, by = c("item", "answer", "occurrence")) |>
-    filter(.data$server_timestamp >= .data$start, .data$server_timestamp < .data$end) |>
+    # epochs are in UTC, independent of local time zone
+    filter(.data$server_timestamp >= as.POSIXct(.data$start, tz = "UTC"),
+           .data$server_timestamp < as.POSIXct(.data$end, tz = "UTC")) |>
     select("trial_id", "item_uid_fixed")
 
   trials |>
