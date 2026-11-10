@@ -12,6 +12,7 @@
 \alias{items}
 \alias{scores}
 \alias{tabdata}
+\alias{convergence}
 \title{Constructor helper}
 \usage{
 modelrecord(mod, row_ids)
@@ -35,6 +36,8 @@ items(object)
 scores(object)
 
 tabdata(object)
+
+convergence(object)
 }
 \arguments{
 \item{mod}{mirt model object}
@@ -42,6 +45,11 @@ tabdata(object)
 \item{row_ids}{character vector}
 
 \item{object}{ModelRecord object}
+}
+\value{
+\code{convergence()}: one-row tibble with \code{converged} (whether
+estimation converged) and \code{iterations} (number of EM cycles); both \code{NA}
+for records created before these were stored
 }
 \description{
 Constructor helper

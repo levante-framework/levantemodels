@@ -36,3 +36,17 @@ test_that("AIC/BIC/logLik methods return the stored fit values", {
   expect_equal(logLik(mr), mr@fit$logLik)
   expect_type(AIC(mr), "double")
 })
+
+test_that("convergence() reports how estimation ended", {
+  fx <- irt_fixture_2pl()
+  conv <- convergence(fx$mod_rec)
+  expect_named(conv, c("converged", "iterations"))
+  expect_true(conv$converged)
+  expect_gt(conv$iterations, 0)
+
+  # records made before convergence was stored
+  old <- fx$mod_rec
+  old@fit <- old@fit[setdiff(names(old@fit), c("converged", "iterations"))]
+  expect_true(is.na(convergence(old)$converged))
+  expect_true(is.na(convergence(old)$iterations))
+})

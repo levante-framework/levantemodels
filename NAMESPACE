@@ -2,6 +2,7 @@
 
 export(ModelRecord)
 export(apply_exclusions)
+export(convergence)
 export(count_items)
 export(dedupe_items)
 export(empirical_reliability)
