@@ -12,7 +12,8 @@ fit_task_models_multigroup(
   priors,
   task,
   group,
-  registry_dir
+  registry_dir,
+  reference_group = NULL
 )
 ```
 
@@ -52,6 +53,13 @@ fit_task_models_multigroup(
 - registry_dir:
 
   string indicating directory in which to save models
+
+- reference_group:
+
+  group whose latent distribution is fixed at N(0, 1) when means and
+  variances are freed (metric and scalar invariance); if `NULL`
+  (default), the alphabetically first group, as in
+  [`mirt::multipleGroup()`](https://philchalmers.github.io/mirt/reference/multipleGroup.html)
 
 ## Value
 

@@ -57,7 +57,8 @@ task, with each level of group as a group, in up to two steps:"></head><body>
 <span>  <span class="va">priors</span>,</span>
 <span>  <span class="va">task</span>,</span>
 <span>  <span class="va">group</span>,</span>
-<span>  <span class="va">registry_dir</span></span>
+<span>  <span class="va">registry_dir</span>,</span>
+<span>  reference_group <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -97,6 +98,12 @@ column of either <code>task_data</code> or the nested <code>data</code></p></dd>
 
 <dt id="arg-registry-dir">registry_dir<a class="anchor" aria-label="anchor" href="#arg-registry-dir"></a></dt>
 <dd><p>string indicating directory in which to save models</p></dd>
+
+
+<dt id="arg-reference-group">reference_group<a class="anchor" aria-label="anchor" href="#arg-reference-group"></a></dt>
+<dd><p>group whose latent distribution is fixed at N(0, 1)
+when means and variances are freed (metric and scalar invariance); if
+<code>NULL</code> (default), the alphabetically first group, as in <code><a href="https://philchalmers.github.io/mirt/reference/multipleGroup.html" class="external-link">mirt::multipleGroup()</a></code></p></dd>
 
 </dl></div>
     <div class="section level2">

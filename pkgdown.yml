@@ -4,7 +4,7 @@ pkgdown_sha: ~
 articles:
   fitting-irt-models: fitting-irt-models.html
   scoring-and-model-registry: scoring-and-model-registry.html
-last_built: 2026-11-10T22:44Z
+last_built: 2026-11-10T23:09Z
 urls:
   reference: https://levante-framework.github.io/levantemodels/reference
   article: https://levante-framework.github.io/levantemodels/articles
