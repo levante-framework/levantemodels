@@ -53,7 +53,9 @@ modelrecord <- \(mod, row_ids) {
       group_names = mirt::extract.mirt(mod, "groupNames"),
       groups = as.character(mirt::extract.mirt(mod, "group")),
       scores = extract_scores(mod, row_ids),
-      fit = mod@Fit
+      # fit statistics plus convergence of the estimation
+      fit = c(mod@Fit, list(converged = mirt::extract.mirt(mod, "converged"),
+                            iterations = mirt::extract.mirt(mod, "iterations")))
   )
 }
 
@@ -116,3 +118,14 @@ scores <- \(object) object@scores
 #' @rdname ModelRecord
 #' @export
 tabdata <- \(object) object@tabdata
+
+#' @rdname ModelRecord
+#' @returns `convergence()`: one-row tibble with `converged` (whether
+#'   estimation converged) and `iterations` (number of EM cycles); both `NA`
+#'   for records created before these were stored
+#' @export
+convergence <- \(object) {
+  fit <- object@fit
+  dplyr::tibble(converged = if (is.null(fit$converged)) NA else fit$converged,
+                iterations = if (is.null(fit$iterations)) NA_real_ else fit$iterations)
+}
