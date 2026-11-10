@@ -111,6 +111,7 @@ and scores, and provides accessors for them.
   [`items()`](https://levante-framework.github.io/levantemodels/reference/ModelRecord.md)
   [`scores()`](https://levante-framework.github.io/levantemodels/reference/ModelRecord.md)
   [`tabdata()`](https://levante-framework.github.io/levantemodels/reference/ModelRecord.md)
+  [`convergence()`](https://levante-framework.github.io/levantemodels/reference/ModelRecord.md)
   : Constructor helper
 - [`count_items()`](https://levante-framework.github.io/levantemodels/reference/count_items.md)
   : Count number of items with non-NA responses for each run

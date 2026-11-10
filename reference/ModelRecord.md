@@ -40,6 +40,8 @@ items(object)
 scores(object)
 
 tabdata(object)
+
+convergence(object)
 ```
 
 ## Arguments
@@ -55,3 +57,9 @@ tabdata(object)
 - object:
 
   ModelRecord object
+
+## Value
+
+`convergence()`: one-row tibble with `converged` (whether estimation
+converged) and `iterations` (number of EM cycles); both `NA` for records
+created before these were stored

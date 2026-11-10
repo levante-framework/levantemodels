@@ -87,7 +87,9 @@ Method for logLik generic"></head><body>
 <span></span>
 <span><span class="fu">scores</span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">tabdata</span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">tabdata</span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">convergence</span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -106,6 +108,12 @@ Method for logLik generic"></head><body>
 <dd><p>ModelRecord object</p></dd>
 
 </dl></div>
+    <div class="section level2">
+    <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
+    <p><code>convergence()</code>: one-row tibble with <code>converged</code> (whether
+estimation converged) and <code>iterations</code> (number of EM cycles); both <code>NA</code>
+for records created before these were stored</p>
+    </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
