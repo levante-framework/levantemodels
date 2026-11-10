@@ -147,11 +147,14 @@ fit_bylanguage_lang <- \(task_data, models, priors, lang, registry_dir) {
 #'   `"scalar"`), and no other columns
 #' @param group variable to use as groups (string or bare variable); can be a
 #'   column of either `task_data` or the nested `data`
+#' @param reference_group group whose latent distribution is fixed at N(0, 1)
+#'   when means and variances are freed (metric and scalar invariance); if
+#'   `NULL` (default), the alphabetically first group, as in [mirt::multipleGroup()]
 #' @returns Called for its side effect of writing model files (returns `NULL`
 #'   without fitting anything if `task` isn't in `task_data` or no items are
 #'   shared by all groups).
 fit_task_models_multigroup <- \(task_data, models, priors, task, group,
-                                registry_dir) {
+                                registry_dir, reference_group = NULL) {
 
   group_name <- rlang::as_name(rlang::enquo(group))
 
@@ -167,6 +170,15 @@ fit_task_models_multigroup <- \(task_data, models, priors, task, group,
     rename(group = all_of(group_name)) |>
     mutate(item_uid = as.character(.data$item_uid)) |>
     filter(!is.na(.data$correct))
+
+  # order groups so that the reference group is first (mirt fixes the first
+  # group's distribution); as_group() drops groups absent from a subset
+  group_levels <- sort(unique(trials$group))
+  if (!is.null(reference_group)) {
+    stopifnot("reference_group must be one of the groups" = reference_group %in% group_levels)
+    group_levels <- c(reference_group, setdiff(group_levels, reference_group))
+  }
+  as_group <- \(g) factor(g, levels = intersect(group_levels, g))
 
   # prep data for modeling
   data_filtered_full <- trials |> dedupe_items() |> remove_no_var_items()
@@ -204,7 +216,7 @@ fit_task_models_multigroup <- \(task_data, models, priors, task, group,
         data = data_prepped_overlap,
         itemtype = itemtype,
         model = mirt::mirt.model(model_str_overlap),
-        group = data_wide_overlap$group,
+        group = as_group(data_wide_overlap$group),
         invariance = invariances[[invariance]],
         guess = guess_overlap,
         verbose = TRUE,
@@ -244,7 +256,7 @@ fit_task_models_multigroup <- \(task_data, models, priors, task, group,
         data = data_prepped_full,
         itemtype = itemtype,
         model = mirt::mirt.model(model_str_full),
-        group = data_wide_full$group,
+        group = as_group(data_wide_full$group),
         invariance = invariances[[invariance]],
         pars = "values",
         guess = guess_full
@@ -267,7 +279,7 @@ fit_task_models_multigroup <- \(task_data, models, priors, task, group,
       mod_full <- mirt::multipleGroup(
         data = data_prepped_full,
         itemtype = itemtype,
-        group = data_wide_full$group,
+        group = as_group(data_wide_full$group),
         invariance = invariances[[invariance]],
         pars = mod_pars_fixed,
         guess = guess_full,

@@ -13,7 +13,9 @@ model_from_record <- \(mod_rec) {
   if (model_class(mod_rec) == "SingleGroupClass") {
     mod <- mirt::mirt(data = mod_rec@data, pars = model_vals(mod_rec), TOL = NaN)
   } else if (model_class(mod_rec) == "MultipleGroupClass") {
-    mod <- mirt::multipleGroup(data = mod_rec@data, group = mod_rec@groups,
+    # groups in the fitted order, so the stored values match their groups
+    mod <- mirt::multipleGroup(data = mod_rec@data,
+                               group = factor(mod_rec@groups, levels = mod_rec@group_names),
                                pars = model_vals(mod_rec), TOL = NaN)
   }
   model_cache$models <- c(model_cache$models, list(list(record = mod_rec, model = mod)))

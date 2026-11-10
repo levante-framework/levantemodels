@@ -82,6 +82,54 @@ test_that("fit_task_models_multigroup() writes a ModelRecord per group set", {
   expect_false(dir.exists(file.path(registry_dir, "hf", "multigroup_site", "all_items")))
 })
 
+test_that("fit_task_models_multigroup() fixes the reference group's distribution", {
+  skip_if_not_installed("mirt")
+  trials <- bind_rows(
+    fit_trials(n_persons = 150, seed = 1) |> mutate(site = "s1"),
+    fit_trials(n_persons = 150, theta_mean = 1, seed = 2) |> mutate(site = "s2",
+                                                                   run_id = paste0(run_id, "b"))
+  )
+  task_data <- tibble(item_task = "hf", data = list(trials))
+  # the all_items refit warns (mirt identification notice on the
+  # pars = "values" call, tidyselect deprecation of .data); both predate
+  # reference_group
+  fit_scalar <- \(registry_dir, ...) {
+    suppressWarnings(suppressMessages(capture.output(
+      fit_task_models_multigroup(
+        task_data = task_data,
+        models = tibble(nfact = 1, itemtype = "Rasch", invariance = "scalar"),
+        priors = list(d = c("norm", 0, 3)),
+        task = "hf", group = "site", registry_dir = registry_dir, ...
+      )
+    )))
+    readRDS(file.path(registry_dir, "hf", "multigroup_site", "all_items",
+                      "hf_rasch_f1_scalar.rds"))
+  }
+  group_mean <- \(mod_rec, group) {
+    vals <- model_vals(mod_rec)
+    vals$value[vals$group == group & vals$name == "MEAN_1"]
+  }
+
+  # default: the alphabetically first group is the reference
+  rec_default <- fit_scalar(withr::local_tempdir())
+  expect_equal(rec_default@group_names, c("s1", "s2"))
+  expect_equal(group_mean(rec_default, "s1"), 0)
+
+  rec_ref <- fit_scalar(withr::local_tempdir(), reference_group = "s2")
+  expect_equal(rec_ref@group_names, c("s2", "s1"))
+  expect_equal(group_mean(rec_ref, "s2"), 0)
+  expect_lt(group_mean(rec_ref, "s1"), -0.5)
+
+  # the reconstructed model keeps each group's values with its group
+  mod <- model_from_record(rec_ref)
+  expect_equal(mirt::extract.mirt(mod, "groupNames"), c("s2", "s1"))
+  rescored <- mirt::fscores(mod, method = "EAP")[, 1]
+  expect_equal(unname(rescored), scores(rec_ref)$ability, tolerance = 1e-6)
+
+  expect_error(fit_scalar(withr::local_tempdir(), reference_group = "s3"),
+               "reference_group must be one of the groups")
+})
+
 test_that("fit_task_models_multigroup() skips a task that isn't in the data", {
   task_data <- tibble(item_task = "hf", data = list(tibble()))
   registry_dir <- withr::local_tempdir()

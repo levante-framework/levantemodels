@@ -10,7 +10,8 @@ fit_task_models_multigroup(
   priors,
   task,
   group,
-  registry_dir
+  registry_dir,
+  reference_group = NULL
 )
 }
 \arguments{
@@ -35,6 +36,10 @@ and values are vectors of length 3 (priorType, val1, val2), e.g.
 column of either \code{task_data} or the nested \code{data}}
 
 \item{registry_dir}{string indicating directory in which to save models}
+
+\item{reference_group}{group whose latent distribution is fixed at N(0, 1)
+when means and variances are freed (metric and scalar invariance); if
+\code{NULL} (default), the alphabetically first group, as in \code{\link[mirt:multipleGroup]{mirt::multipleGroup()}}}
 }
 \value{
 Called for its side effect of writing model files (returns \code{NULL}
