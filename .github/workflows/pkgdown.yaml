@@ -21,6 +21,9 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       REDIVIS_API_TOKEN: ${{ secrets.REDIVIS_API_TOKEN }}
+      # don't activate the repo's renv project (.Rprofile): it installs from source
+      # into renv's library, which is never cached; use the r-lib setup instead
+      RENV_CONFIG_AUTOLOADER_ENABLED: false
     permissions:
       contents: write
     steps:
