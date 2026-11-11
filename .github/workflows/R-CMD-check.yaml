@@ -24,6 +24,9 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
+      # don't activate the repo's renv project (.Rprofile): it installs from source
+      # into renv's library, which is never cached; use the r-lib setup instead
+      RENV_CONFIG_AUTOLOADER_ENABLED: false
 
     steps:
       - uses: actions/checkout@v4
