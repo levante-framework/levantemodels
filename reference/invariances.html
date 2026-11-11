@@ -61,6 +61,18 @@ passed to the <code>invariance</code> argument of <code><a href="https://philcha
     <h2 id="format">Format<a class="anchor" aria-label="anchor" href="#format"></a></h2>
     <p>An object of class <code>list</code> of length 3.</p>
     </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>mirt fixes every group's latent distribution at N(0, 1) unless <code>free_means</code>
+or <code>free_var</code> is given, and always fixes the reference (first) group's.
+So:</p><ul><li><p><code>configural</code>: item parameters free in every group; all groups N(0, 1).</p></li>
+<li><p><code>metric</code>: slopes equal across groups; latent variances free (identified
+by the equal slopes), means fixed at 0.</p></li>
+<li><p><code>scalar</code>: slopes and intercepts equal; means and variances free.</p></li>
+</ul><p>Each level adds constraints to the one before, so the three are nested.
+(Before 2026-11, <code>metric</code> was <code>"slopes"</code> alone, following an earlier mirt
+example, which also held every group's variance at 1.)</p>
+    </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>

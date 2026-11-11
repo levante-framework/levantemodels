@@ -117,7 +117,8 @@ constrained to be equal across groups:
 
 - `"configural"`: nothing is shared, so each group has its own item
   parameters.
-- `"metric"`: slopes are shared.
+- `"metric"`: slopes are shared, and group variances are freely
+  estimated.
 - `"scalar"`: slopes and intercepts are shared, and group means and
   variances are freely estimated.
 
@@ -331,7 +332,7 @@ tibble(model = basename(overlap_files),
 #> 1 matrix_rasch_f1_scalar.rds     -4491. 9011. 9079.
 #> 2 matrix_2pl_f1_scalar.rds       -4483. 9017. 9135.
 #> 3 matrix_rasch_f1_configural.rds -4483. 9019. 9137.
-#> 4 matrix_2pl_f1_metric.rds       -4477. 9027. 9190.
+#> 4 matrix_2pl_f1_metric.rds       -4476. 9026. 9194.
 #> 5 matrix_2pl_f1_configural.rds   -4474. 9043. 9262.
 ```
 
