@@ -15,4 +15,19 @@ Named list giving, for each invariance level that can be used in the
 \code{invariance} column of \code{models} in \code{\link[=fit_task_models_multigroup]{fit_task_models_multigroup()}}, the value
 passed to the \code{invariance} argument of \code{\link[mirt:multipleGroup]{mirt::multipleGroup()}}.
 }
+\details{
+mirt fixes every group's latent distribution at N(0, 1) unless \code{free_means}
+or \code{free_var} is given, and always fixes the reference (first) group's.
+So:
+\itemize{
+\item \code{configural}: item parameters free in every group; all groups N(0, 1).
+\item \code{metric}: slopes equal across groups; latent variances free (identified
+by the equal slopes), means fixed at 0.
+\item \code{scalar}: slopes and intercepts equal; means and variances free.
+}
+
+Each level adds constraints to the one before, so the three are nested.
+(Before 2026-11, \code{metric} was \code{"slopes"} alone, following an earlier mirt
+example, which also held every group's variance at 1.)
+}
 \keyword{datasets}

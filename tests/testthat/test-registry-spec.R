@@ -42,7 +42,7 @@ test_that("get_model_spec() returns a single-row spec or NULL", {
 
 test_that("translate_invariance() maps mirt invariance terms to shorthand", {
   expect_equal(translate_invariance(""), "configural")
-  expect_equal(translate_invariance(c("slopes")), "metric")
+  expect_equal(translate_invariance(c("slopes", "free_var")), "metric")
   expect_equal(
     translate_invariance(c("free_means", "free_var", "intercepts", "slopes")),
     "scalar"

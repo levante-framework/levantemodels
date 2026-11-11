@@ -130,6 +130,35 @@ test_that("fit_task_models_multigroup() fixes the reference group's distribution
                "reference_group must be one of the groups")
 })
 
+test_that("metric invariance frees the focal groups' variances", {
+  skip_if_not_installed("mirt")
+  trials <- bind_rows(
+    fit_trials(n_persons = 200, seed = 1) |> mutate(site = "s1"),
+    fit_trials(n_persons = 200, seed = 2) |> mutate(site = "s2",
+                                                    run_id = paste0(run_id, "b"))
+  )
+  task_data <- tibble(item_task = "hf", data = list(trials))
+  registry_dir <- withr::local_tempdir()
+
+  suppressWarnings(suppressMessages(capture.output(
+    fit_task_models_multigroup(
+      task_data = task_data,
+      models = tibble(nfact = 1, itemtype = "2PL", invariance = "metric"),
+      priors = list(d = c("norm", 0, 3), a1 = c("norm", 1, 0.3)),
+      task = "hf", group = "site", registry_dir = registry_dir
+    )
+  )))
+
+  mod_rec <- readRDS(file.path(registry_dir, "hf", "multigroup_site", "overlap_items",
+                               "hf_2pl_f1_metric.rds"))
+  vals <- model_vals(mod_rec)
+  est <- \(group, name) vals$est[vals$group == group & vals$name == name]
+  # reference group fixed at N(0, 1); focal group variance estimated, mean fixed
+  expect_false(est("s1", "COV_11"))
+  expect_true(est("s2", "COV_11"))
+  expect_false(est("s2", "MEAN_1"))
+})
+
 test_that("fit_task_models_multigroup() skips a task that isn't in the data", {
   task_data <- tibble(item_task = "hf", data = list(tibble()))
   registry_dir <- withr::local_tempdir()
