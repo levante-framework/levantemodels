@@ -104,12 +104,6 @@ get_model_record <- \(spec, registry_dir) {
 # to shorthand name
 # (one of c("configural", "metric", "scalar_intercepts", "scalar_slopes_and_intercepts", "full")
 translate_invariance <- \(invariance_terms) {
-  invariances <- list(
-    configural = "",
-    metric = c("slopes"),
-    scalar = c("free_means", "free_var", "intercepts", "slopes")
-  )
-
   invariances |>
     purrr::map(\(inv) setequal(inv, invariance_terms)) |>
     purrr::keep(identity) |>

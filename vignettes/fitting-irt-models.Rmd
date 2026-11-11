@@ -105,7 +105,7 @@ across groups:
 
 - `"configural"`: nothing is shared, so each group has its own item
   parameters.
-- `"metric"`: slopes are shared.
+- `"metric"`: slopes are shared, and group variances are freely estimated.
 - `"scalar"`: slopes and intercepts are shared, and group means and variances
   are freely estimated.
 
