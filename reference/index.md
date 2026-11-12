@@ -42,6 +42,8 @@ are ready for scoring.
   : Recode trial correctness for scoring
 - [`recode_hf()`](https://levante-framework.github.io/levantemodels/reference/recode_hf.md)
   : Recode correctness + reclassify items for HF
+- [`hf_forms()`](https://levante-framework.github.io/levantemodels/reference/hf_forms.md)
+  : Identify the Hearts & Flowers form of each run
 - [`recode_sds()`](https://levante-framework.github.io/levantemodels/reference/recode_sds.md)
   : Recode correctness for SDS
 - [`recode_slider()`](https://levante-framework.github.io/levantemodels/reference/recode_slider.md)

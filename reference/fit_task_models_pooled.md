@@ -72,4 +72,6 @@ Before fitting, trials with `NA` `correct` are dropped, repeated
 presentations of an item within a run are treated as separate instances
 whose parameters are constrained to be equal, and item instances with no
 variance in responses are dropped. Each item's `chance` is used as its
-fixed lower asymptote (guessing parameter).
+fixed lower asymptote (guessing parameter), except for items with
+`free_guess = TRUE`, whose lower asymptote is estimated (see
+[`generate_model_str_numeric()`](https://levante-framework.github.io/levantemodels/reference/generate_model_str_numeric.md)).

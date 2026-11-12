@@ -11,7 +11,8 @@ generate_model_str_numeric(
   item_type,
   f,
   priors = NULL,
-  item_sep = "-"
+  item_sep = "-",
+  constrain_guess_groups = FALSE
 )
 ```
 
@@ -41,6 +42,19 @@ generate_model_str_numeric(
 
   string to put in between item_uid and instance index (defaults to "-")
 
+- constrain_guess_groups:
+
+  whether to constrain estimated lower asymptotes to be equal across
+  groups (for scalar multigroup models)
+
 ## Value
 
 string that can be passed to `mirt.model()` as `input`
+
+## Details
+
+If `df` has a logical `free_guess` column, the lower asymptote (`g`) of
+the items with `free_guess = TRUE` is estimated instead of fixed at
+their `chance`, bounded above by `chance`, with one value per item
+shared by its instances. This applies to Rasch models only; in other
+models it stays fixed at `chance`.

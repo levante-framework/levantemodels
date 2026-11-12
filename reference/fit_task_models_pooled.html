@@ -125,7 +125,9 @@ a column of <code>task_data</code> (not of the nested <code>data</code>)</p></dd
 presentations of an item within a run are treated as separate instances
 whose parameters are constrained to be equal, and item instances with no
 variance in responses are dropped. Each item's <code>chance</code> is used as its fixed
-lower asymptote (guessing parameter).</p>
+lower asymptote (guessing parameter), except for items with
+<code>free_guess = TRUE</code>, whose lower asymptote is estimated (see
+<code><a href="generate_model_str_numeric.html">generate_model_str_numeric()</a></code>).</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
