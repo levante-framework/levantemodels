@@ -82,3 +82,27 @@ test_that("remove_nonshared_items() keeps only items present in all groups", {
 
   expect_setequal(unique(out$item_uid), "shared")
 })
+
+test_that("generate_model_str_numeric() frees bounded guessing for free_guess items in Rasch models", {
+  df <- tibble(
+    run_id = rep(c("r1", "r2"), each = 3),
+    item_uid = rep(c("a", "b", "b"), 2),
+    correct = c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE),
+    chance = 0.5,
+    free_guess = rep(c(FALSE, TRUE, TRUE), 2)
+  ) |> dedupe_items()
+  prepped <- to_mirt_shape(df)
+  b_idx <- which(startsWith(colnames(prepped), "b-"))
+
+  rasch <- generate_model_str_numeric(df, prepped, "Rasch", 1)
+  expect_match(rasch, glue::glue("FREE=({paste(b_idx, collapse = ',')},g)"), fixed = TRUE)
+  expect_match(rasch, glue::glue("UBOUND=({paste(b_idx, collapse = ',')},g,0.5)"), fixed = TRUE)
+  # instances share one difficulty and one lower asymptote
+  expect_match(rasch, glue::glue("({paste(b_idx, collapse = ',')},g)"), fixed = TRUE)
+  expect_no_match(rasch, "CONSTRAINB")
+  expect_match(generate_model_str_numeric(df, prepped, "Rasch", 1, constrain_guess_groups = TRUE),
+               "CONSTRAINB=", fixed = TRUE)
+
+  # in 2PL models the lower asymptote stays fixed
+  expect_no_match(generate_model_str_numeric(df, prepped, "2PL", 1), "FREE|UBOUND|,g\\)")
+})

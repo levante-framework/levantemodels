@@ -54,5 +54,7 @@ Before fitting, trials with \code{NA} \code{correct} are dropped, repeated
 presentations of an item within a run are treated as separate instances
 whose parameters are constrained to be equal, and item instances with no
 variance in responses are dropped. Each item's \code{chance} is used as its fixed
-lower asymptote (guessing parameter).
+lower asymptote (guessing parameter), except for items with
+\code{free_guess = TRUE}, whose lower asymptote is estimated (see
+\code{\link[=generate_model_str_numeric]{generate_model_str_numeric()}}).
 }

@@ -39,6 +39,84 @@ test_that("recode_hf() codes extreme RTs incorrect and labels start/stay/switch"
   expect_equal(out$item_uid, c("hf_g_a_start", "hf_g_a_stay", "hf_g_b_switch"))
 })
 
+# H&F run with a pure hearts block and a 48-trial mixed block, all correct
+hf_run <- \(run_id, rt_mixed, hf_form = NULL) {
+  df <- tibble(
+    item_task = "hf", run_id = run_id,
+    item_group = c(rep("hearts", 2), rep("heartsflowers", 48)),
+    trial_number = 1:50,
+    item = c("heart", "heart", rep(c("heart", "flower"), 24)),
+    rt_numeric = c(2500, 1000, rt_mixed),
+    correct = TRUE
+  )
+  if (!is.null(hf_form)) df$hf_form <- hf_form
+  df
+}
+
+test_that("recode_hf() codes v2 mixed trials by window and form-specific items", {
+  # mixed trials 1-16 have a 3 s window, 17-32 2 s, 33-48 1.5 s
+  rt_mixed <- rep(c(2500, 1800, 1000), each = 16)
+  v2 <- suppressMessages(recode_hf(hf_run("r2", rt_mixed, "v2"))) |> arrange(trial_number)
+  mixed <- v2 |> filter(item_group == "heartsflowers")
+
+  # 2.5 s is within the 3 s window, 1.8 s within the 2 s window
+  expect_true(all(mixed$correct))
+  expect_equal(unique(stringr::str_extract(mixed$item_uid, "v2_[0-9]+ms")),
+               c("v2_3000ms", "v2_2000ms", "v2_1500ms"))
+  expect_equal(mixed$item_uid[1:2], c("hf_heartsflowers_heart_start_v2_3000ms",
+                                      "hf_heartsflowers_flower_switch_v2_3000ms"))
+  expect_true(all(mixed$free_guess))
+  # pure blocks keep the shared items and the 2 s cutoff
+  pure <- v2 |> filter(item_group == "hearts")
+  expect_equal(pure$item_uid, c("hf_hearts_heart_start", "hf_hearts_heart_stay"))
+  expect_equal(pure$correct, c(FALSE, TRUE))
+  expect_false(any(pure$free_guess))
+
+  # a response slower than a trial's window is incorrect
+  slow <- suppressMessages(recode_hf(hf_run("r3", rep(c(3200, 2200, 1700), each = 16), "v2")))
+  expect_false(any(slow$correct[slow$item_group == "heartsflowers"]))
+})
+
+test_that("recode_hf() keeps the 2 s cutoff and shared items for v1 runs", {
+  rt_mixed <- rep(c(2500, 1800, 1000), each = 16)
+  v1 <- suppressMessages(recode_hf(hf_run("r1", rt_mixed, "v1"))) |> arrange(trial_number)
+  mixed <- v1 |> filter(item_group == "heartsflowers")
+  expect_equal(mixed$correct, rt_mixed <= 2000)
+  expect_false(any(grepl("v2", mixed$item_uid)))
+  expect_false(any(v1$free_guess))
+
+  # without an hf_form column every run is treated as v1
+  no_form <- suppressMessages(recode_hf(hf_run("r1", rt_mixed))) |> arrange(trial_number)
+  expect_equal(no_form$correct, v1$correct)
+  expect_equal(no_form$item_uid, v1$item_uid)
+})
+
+test_that("recode_hf() gives other tasks' trials free_guess = FALSE", {
+  df <- bind_rows(hf_run("r1", rep(1000, 48), "v2"),
+                  tibble(item_task = "math", run_id = "m1", item_group = "g",
+                         trial_number = 1L, item = "x", rt_numeric = 1000, correct = TRUE))
+  out <- suppressMessages(recode_hf(df))
+  expect_false(out$free_guess[out$item_task == "math"])
+})
+
+test_that("hf_forms() marks a variant v2 by its mixed-block length or start date", {
+  runs <- tibble(
+    run_id = c("a1", "a2", "b1", "c1"),
+    task_id = "hearts-and-flowers",
+    variant_id = c("A", "A", "B", "C"),
+    time_started = as.POSIXct(c("2026-01-10", "2026-05-01", "2025-12-01", "2026-06-01"), tz = "UTC")
+  )
+  # variant A has one 48-trial run; variant C was first run after v2 shipped
+  # and its run stopped early
+  trials <- tibble(
+    item_task = "hf",
+    run_id = c(rep("a1", 32), rep("a2", 48), rep("b1", 32), rep("c1", 10)),
+    item_group = "heartsflowers"
+  )
+  forms <- hf_forms(runs, trials) |> arrange(run_id)
+  expect_equal(forms$hf_form, c("v2", "v2", "v1", "v2"))
+})
+
 test_that("recode_wrong_items() rescores against the corrected answer key", {
   df <- tibble(
     item_uid = c("math_subtract_37_24", "math_subtract_37_24", "other"),

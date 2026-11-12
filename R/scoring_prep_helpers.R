@@ -44,33 +44,84 @@ recode_trials <- \(df, slider_threshold = 0.15) {
            chance = .data$chance |> tidyr::replace_na(0))
 }
 
+#' Identify the Hearts & Flowers form of each run
+#'
+#' H&F v2 (core-tasks #442, shipped 2026-04-21) adds response windows and
+#' feedback, gated on a variant parameter that isn't exported to Redivis. A
+#' variant is v2 if any of its runs has more than 32 mixed-block trials (v1 has
+#' 32, v2 48) or its first run is on or after `v2_start`, since every variant
+#' created from 2026-04-23 on runs v2. (On the four pilot datasets as of
+#' 2026-11 the two signals agree on every variant.)
+#'
+#' @param runs run data with columns `run_id`, `task_id`, `variant_id`,
+#'   `time_started`
+#' @param trials trial data with columns `run_id`, `item_task`, `item_group`
+#' @param v2_start first date of v2 variants
+#' @returns tibble with columns `run_id` and `hf_form` (`"v1"` or `"v2"`), one
+#'   row per H&F run
+#' @export
+hf_forms <- \(runs, trials, v2_start = "2026-04-23") {
+  n_mixed <- trials |>
+    filter(.data$item_task == "hf", .data$item_group == "heartsflowers") |>
+    count(.data$run_id, name = "n_mixed")
+  runs |>
+    filter(.data$task_id == "hearts-and-flowers") |>
+    distinct(.data$run_id, .data$variant_id, .data$time_started) |>
+    left_join(n_mixed, by = "run_id") |>
+    mutate(v2 = any(.data$n_mixed > 32, na.rm = TRUE) |
+             min(.data$time_started) >= as.POSIXct(v2_start, tz = "UTC"),
+           .by = "variant_id") |>
+    transmute(.data$run_id, hf_form = if_else(.data$v2, "v2", "v1"))
+}
+
 #' Recode correctness + reclassify items for HF
 #'
+#' Codes each trial's item as start, stay, or switch within its block and codes
+#' responses faster than 200 ms or slower than the trial's window as incorrect.
+#' The window is 2000 ms, except in the mixed block of H&F v2, where it is the
+#' form's response window: 3000, 2000, and 1500 ms for mixed trials 1-16,
+#' 17-32, and 33-48. v2 mixed-block items are form-specific and split by
+#' window (e.g. `hf_heartsflowers_heart_switch_v2_1500ms`) and get
+#' `free_guess = TRUE`, so that their lower asymptote is estimated (a missed
+#' window scores 0, not chance); the pure-block items are shared by both forms.
+#'
 #' @inheritParams recode_trials
+#' @param df trial data; H&F trials with an `hf_form` column (see [hf_forms()])
+#'   are recoded by form, and without one are all treated as v1
 #' @export
 recode_hf <- \(df) {
   message("Recoding hearts and flowers trials")
-  hf_trials <- df |>
-    filter(.data$item_task == "hf") |>
-    # code too fast/slow RTs as incorrect
-    mutate(response_fast = .data$rt_numeric < 200, response_slow = .data$rt_numeric > 2000,
-           correct = .data$correct & !.data$response_fast & !.data$response_slow) |>
-    select(-"response_fast", -"response_slow") |>
-    # recode items based on whether they're same as previous item
+  hf_trials <- df |> filter(.data$item_task == "hf")
+  if (nrow(hf_trials) == 0) return(df |> mutate(free_guess = FALSE))
+  if (!"hf_form" %in% names(hf_trials)) hf_trials$hf_form <- "v1"
+  hf_trials <- hf_trials |>
+    # recode items based on whether they're same as previous item, and number
+    # trials within their block
     group_by(.data$run_id, .data$item_group) |>
     arrange(.data$trial_number) |>
     mutate(hf_type = case_when(
       is.na(lag(.data$item)) ~ "start",
       .data$item == lag(.data$item) ~ "stay",
-      .data$item != lag(.data$item) ~ "switch")) |>
+      .data$item != lag(.data$item) ~ "switch"),
+      block_pos = .data$trial_number - min(.data$trial_number) + 1) |>
     ungroup() |>
+    mutate(v2_mixed = .data$hf_form %in% "v2" & .data$item_group == "heartsflowers",
+           window = case_when(!.data$v2_mixed ~ 2000,
+                              .data$block_pos <= 16 ~ 3000,
+                              .data$block_pos <= 32 ~ 2000,
+                              TRUE ~ 1500)) |>
+    # code too fast/slow RTs as incorrect
+    mutate(response_fast = .data$rt_numeric < 200, response_slow = .data$rt_numeric > .data$window,
+           correct = .data$correct & !.data$response_fast & !.data$response_slow) |>
     mutate(item = paste(.data$item, .data$hf_type, sep = "_"),
-           item_uid = paste("hf", .data$item_group, .data$item, sep = "_")) |>
-    # filter(hf_type != "start") |>
-    select(-"hf_type")
+           item_uid = paste("hf", .data$item_group, .data$item, sep = "_"),
+           item_uid = if_else(.data$v2_mixed, paste0(.data$item_uid, "_v2_", .data$window, "ms"), .data$item_uid),
+           free_guess = .data$v2_mixed) |>
+    select(-"hf_type", -"block_pos", -"v2_mixed", -"window", -"response_fast", -"response_slow")
 
   df |>
     filter(.data$item_task != "hf") |>
+    mutate(free_guess = FALSE) |>
     bind_rows(hf_trials)
 }
 
