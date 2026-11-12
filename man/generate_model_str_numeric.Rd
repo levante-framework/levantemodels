@@ -10,7 +10,8 @@ generate_model_str_numeric(
   item_type,
   f,
   priors = NULL,
-  item_sep = "-"
+  item_sep = "-",
+  constrain_guess_groups = FALSE
 )
 }
 \arguments{
@@ -25,10 +26,20 @@ generate_model_str_numeric(
 \item{priors}{list of priors}
 
 \item{item_sep}{string to put in between item_uid and instance index (defaults to "-")}
+
+\item{constrain_guess_groups}{whether to constrain estimated lower
+asymptotes to be equal across groups (for scalar multigroup models)}
 }
 \value{
 string that can be passed to \code{mirt.model()} as \code{input}
 }
 \description{
 Generates mirt model strings
+}
+\details{
+If \code{df} has a logical \code{free_guess} column, the lower asymptote
+(\code{g}) of the items with \code{free_guess = TRUE} is estimated instead of fixed
+at their \code{chance}, bounded above by \code{chance}, with one value per item
+shared by its instances. This applies to Rasch models only; in other
+models it stays fixed at \code{chance}.
 }

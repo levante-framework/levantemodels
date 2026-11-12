@@ -46,6 +46,7 @@ reference:
     contents:
     - recode_trials
     - recode_hf
+    - hf_forms
     - recode_sds
     - recode_slider
     - recode_tom

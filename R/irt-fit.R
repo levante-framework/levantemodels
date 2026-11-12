@@ -35,7 +35,9 @@ invariances <- list(
 #' presentations of an item within a run are treated as separate instances
 #' whose parameters are constrained to be equal, and item instances with no
 #' variance in responses are dropped. Each item's `chance` is used as its fixed
-#' lower asymptote (guessing parameter).
+#' lower asymptote (guessing parameter), except for items with
+#' `free_guess = TRUE`, whose lower asymptote is estimated (see
+#' [generate_model_str_numeric()]).
 #'
 #' @param task_data data frame nested by task and grouping variables, with
 #'   columns `item_task`, the grouping variable(s) (e.g. `language`,
@@ -221,7 +223,8 @@ fit_task_models_multigroup <- \(task_data, models, priors, task, group,
       message(glue::glue("fitting {task} multigroup model ({nfact} factor {itemtype} with {invariance} invariance)"))
 
       # generate model string with item constraints + dimensionality
-      model_str_overlap <- generate_model_str_numeric(data_filtered_overlap, data_prepped_overlap, itemtype, nfact, priors)
+      model_str_overlap <- generate_model_str_numeric(data_filtered_overlap, data_prepped_overlap, itemtype, nfact, priors,
+                                                      constrain_guess_groups = invariance == "scalar")
 
       # fit overlap items model
       mod_overlap <- mirt::multipleGroup(
@@ -262,7 +265,8 @@ fit_task_models_multigroup <- \(task_data, models, priors, task, group,
         select(-"item") |>
         distinct()
 
-      model_str_full <- generate_model_str_numeric(data_filtered_full, data_prepped_full, itemtype, nfact, priors)
+      model_str_full <- generate_model_str_numeric(data_filtered_full, data_prepped_full, itemtype, nfact, priors,
+                                                   constrain_guess_groups = invariance == "scalar")
       # set up parameter structure of full model
       mod_pars <- mirt::multipleGroup(
         data = data_prepped_full,

@@ -130,6 +130,54 @@ test_that("fit_task_models_multigroup() fixes the reference group's distribution
                "reference_group must be one of the groups")
 })
 
+test_that("scalar fits estimate one bounded lower asymptote per free_guess item", {
+  skip_if_not_installed("mirt")
+  # items 1-3 have a 0.5 floor; item "timed" (given twice per run) a 0.2 floor
+  sim <- \(n, theta_mean, seed, site) {
+    set.seed(seed)
+    theta <- rnorm(n, theta_mean)
+    d <- c(-1, 0, 1, 0.5, 0.5)
+    floor <- c(0.5, 0.5, 0.5, 0.2, 0.2)
+    probs <- sweep(plogis(outer(theta, d, `-`)), 2, 1 - floor, `*`) |> sweep(2, floor, `+`)
+    resp <- matrix(rbinom(length(probs), 1, probs), nrow = n)
+    grid <- expand.grid(run = seq_len(n), item = 1:5)
+    tibble(run_id = paste0(site, "_", grid$run),
+           item_uid = c("i1", "i2", "i3", "timed", "timed")[grid$item],
+           correct = as.logical(resp[cbind(grid$run, grid$item)]),
+           chance = 0.5, free_guess = grid$item >= 4, site = site)
+  }
+  trials <- bind_rows(sim(600, 0, 1, "s1"), sim(600, 0.5, 2, "s2"))
+  task_data <- tibble(item_task = "hf", data = list(trials))
+  fit <- \(itemtype) {
+    registry_dir <- withr::local_tempdir(.local_envir = parent.frame())
+    suppressWarnings(suppressMessages(capture.output(
+      fit_task_models_multigroup(
+        task_data = task_data,
+        models = tibble(nfact = 1, itemtype = itemtype, invariance = "scalar"),
+        priors = list(d = c("norm", 0, 3), a1 = c("norm", 1, 0.3)),
+        task = "hf", group = "site", registry_dir = registry_dir
+      )
+    )))
+    readRDS(file.path(registry_dir, "hf", "multigroup_site", "all_items",
+                      glue::glue("hf_{tolower(itemtype)}_f1_scalar.rds")))
+  }
+  g_vals <- \(rec, prefix) {
+    vals <- model_vals(rec)
+    vals$value[vals$name == "g" & startsWith(vals$item, prefix)]
+  }
+
+  rasch <- fit("Rasch")
+  timed_g <- g_vals(rasch, "timed-")
+  # one value for both instances in both groups, below chance
+  expect_length(timed_g, 4)
+  expect_equal(length(unique(round(timed_g, 8))), 1)
+  expect_lt(timed_g[1], 0.4)
+  expect_true(all(g_vals(rasch, "i") == 0.5))
+
+  # 2PL keeps every lower asymptote at chance
+  expect_true(all(g_vals(fit("2PL"), "") == 0.5))
+})
+
 test_that("metric invariance frees the focal groups' variances", {
   skip_if_not_installed("mirt")
   trials <- bind_rows(

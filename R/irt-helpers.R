@@ -91,11 +91,20 @@ paste_c <- \(...) paste(..., collapse = ",")
 #' @param f number of factors
 #' @param priors list of priors
 #' @param item_sep string to put in between item_uid and instance index (defaults to "-")
+#' @param constrain_guess_groups whether to constrain estimated lower
+#'   asymptotes to be equal across groups (for scalar multigroup models)
+#'
+#' @details If `df` has a logical `free_guess` column, the lower asymptote
+#'   (`g`) of the items with `free_guess = TRUE` is estimated instead of fixed
+#'   at their `chance`, bounded above by `chance`, with one value per item
+#'   shared by its instances. This applies to Rasch models only; in other
+#'   models it stays fixed at `chance`.
 #'
 #' @returns string that can be passed to `mirt.model()` as `input`
 #' @export
 generate_model_str_numeric <- function(df, df_prepped, item_type, f, # f = num factors
-                                       priors = NULL, item_sep = "-") {
+                                       priors = NULL, item_sep = "-",
+                                       constrain_guess_groups = FALSE) {
 
   items <- df |> pull(.data$item_uid) |> unique() # item ids
 
@@ -107,18 +116,31 @@ generate_model_str_numeric <- function(df, df_prepped, item_type, f, # f = num f
     params <- c(params, "a1")
   }
 
+  # items whose lower asymptote is estimated (Rasch models only: with free
+  # slopes, a free lower asymptote is poorly identified)
+  free_guess_items <- if ("free_guess" %in% names(df) && item_type == "Rasch") {
+    df |> filter(.data$free_guess %in% TRUE) |> pull(.data$item_uid) |> unique()
+  } else character()
+
   item_params <- df |>
     group_by(.data$item_uid) |>
     summarise(n_cat = n_distinct(.data$correct)) |>
-    mutate(params = purrr::map(.data$n_cat, \(nc) if (nc == 2) params else paste0(params, 1:(nc-1)))) |>
+    mutate(params = purrr::map2(.data$item_uid, .data$n_cat, \(item_uid, nc) {
+      if (nc != 2) return(paste0(params, 1:(nc-1)))
+      if (item_uid %in% free_guess_items) c(params, "g") else params
+    })) |>
     select("item_uid", "params") |>
     tibble::deframe()
 
-  constraints <- items |> purrr::map(\(item_uid) {
-    # get columns with item's instances by checking for columns that start with
-    # item_uid + item_sep
+  # get columns with an item's instances by checking for columns that start
+  # with item_uid + item_sep
+  instance_idx <- \(item_uid) {
     prefixes <- stringr::str_sub(colnames(df_prepped), start = 1, end = stringr::str_length(item_uid) + 1)
-    matched_idx <- which(prefixes == paste0(item_uid, item_sep))
+    which(prefixes == paste0(item_uid, item_sep))
+  }
+
+  constraints <- items |> purrr::map(\(item_uid) {
+    matched_idx <- instance_idx(item_uid)
 
     if (length(matched_idx) > 1) {
       # constraint for item instance: (item_1, item_2, param)
@@ -126,6 +148,23 @@ generate_model_str_numeric <- function(df, df_prepped, item_type, f, # f = num f
     }
   }) |> purrr::compact() |> paste_c() # combine into CONSTRAIN statement
   constraint <- if (stringr::str_length(constraints) > 1) paste0("CONSTRAIN=", constraints) else ""
+
+  # free the lower asymptote of free_guess items, bounded above by the item's
+  # chance (and held equal across groups)
+  free_guess_idx <- free_guess_items |> purrr::map(instance_idx) |> unlist() |> sort()
+  free <- ubound <- constraint_b <- ""
+  if (length(free_guess_idx) > 0) {
+    free <- glue::glue("FREE=({paste_c(free_guess_idx)},g)")
+    chance <- df |> filter(.data$item_uid %in% free_guess_items) |>
+      distinct(.data$item_uid, .data$chance)
+    ubound <- chance |>
+      mutate(idx = purrr::map(.data$item_uid, instance_idx)) |>
+      summarise(idx = list(sort(unlist(.data$idx))), .by = "chance") |>
+      purrr::pmap_chr(\(chance, idx) glue::glue("({paste_c(idx)},g,{chance})")) |>
+      paste_c()
+    ubound <- paste0("UBOUND=", ubound)
+    if (constrain_guess_groups) constraint_b <- glue::glue("CONSTRAINB=({paste_c(free_guess_idx)},g)")
+  }
 
   # e.g. PRIOR = (2-3, 5, d, norm, 0, 1), (4, d, norm, 0, 0.5)')
   # prior_terms <- priors |> imap(\(pr, param) glue("(1-{length(items)},{paste(c(param, pr),collapse = ',')})"))
@@ -135,5 +174,5 @@ generate_model_str_numeric <- function(df, df_prepped, item_type, f, # f = num f
   prior <- if (length(prior_terms) > 0) glue::glue("PRIOR={paste(prior_terms, collapse = ',')}") else ""
 
   # combine statements
-  paste(c(factors, constraint, prior), collapse = "\n")
+  paste(c(factors, constraint, free, ubound, constraint_b, prior), collapse = "\n")
 }
