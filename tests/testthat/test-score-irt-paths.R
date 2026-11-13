@@ -100,3 +100,13 @@ test_that("score_irt() returns NULL for metric/configural models with an unknown
     expect_null(suppressMessages(score_irt(trials_baddataset, spec, fx$mod_rec)))
   }
 })
+
+test_that("score_irt() labels scores with the spec's registry_version, or else the scoring table's version", {
+  fx <- irt_fixture_2pl()
+
+  scored <- suppressMessages(score_irt(fx$trials, fx$spec, fx$mod_rec))
+  expect_identical(unique(scored$registry_version), "v1_0")
+  spec <- modifyList(fx$spec, list(registry_version = "v2_5"))
+  scored <- suppressMessages(score_irt(fx$trials, spec, fx$mod_rec))
+  expect_identical(unique(scored$registry_version), "v2_5")
+})

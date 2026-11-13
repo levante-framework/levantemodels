@@ -71,6 +71,7 @@ reference:
     contents:
     - fit_task_models_pooled
     - fit_task_models_multigroup
+    - add_groups_multigroup
     - fit_bylanguage_task
     - fit_bylanguage_lang
 
