@@ -5,8 +5,7 @@
 #' scoring**: the calibrated models were fit on recoded trials, so scoring raw
 #' `get_trials()` output yields subtly wrong values. Corrections include slider
 #' thresholding (a response is correct within `slider_threshold` of the target,
-#' with chance set to the probability that a uniformly random placement lands
-#' within that window), Hearts & Flowers RT and
+#' with chance fixed at 0.15), Hearts & Flowers RT and
 #' start/stay/switch coding, Same/Different Selection and Theory of Mind
 #' recodes, known item-key fixes (e.g. `math_subtract_37_24`), and chance-level
 #' backfill. See `vignette("scoring-and-model-registry")`.
@@ -126,10 +125,10 @@ recode_hf <- \(df) {
 
 #' Recode correctness for slider
 #'
-#' Also sets each item's chance to the probability that a uniformly random
-#' placement on the line lands within `slider_threshold` of the target, i.e.
-#' the length of the window `[p - slider_threshold, p + slider_threshold]`
-#' clipped to `[0, 1]`, where `p` is the target as a proportion of the line.
+#' Also fixes every slider item's chance at 0.15. Of single floors from 0.10 to
+#' 0.30, 0.15 fit the math model best with the default `slider_threshold` of
+#' 0.15 (levante-analysis, studies/2026-11_number-line). It is not derived from
+#' the threshold, so a different threshold needs its own floor.
 #'
 #' @inheritParams recode_trials
 #' @export
@@ -145,12 +144,10 @@ recode_slider <- \(df, slider_threshold) {
     mutate(target = .data$target |> stringr::str_replace("^0", "0."),
            across(c("target", "max_value"), as.numeric),
            correct = (abs(as.numeric(.data$response) - .data$target) / .data$max_value < slider_threshold),
-           # chance of a uniformly random placement landing within threshold
-           p = .data$target / .data$max_value,
-           chance = pmin(1, .data$p + slider_threshold) - pmax(0, .data$p - slider_threshold)) |>
+           chance = 0.15) |>
     # remove trials where response greater than max value (must be from a bug)
     filter(as.numeric(.data$response) <= .data$max_value) |>
-    select(-c("target", "max_value", "p"))
+    select(-c("target", "max_value"))
   df |>
     filter(.data$item_group != "slider") |>
     bind_rows(slider_trials)

@@ -12,8 +12,8 @@ recode_slider(df, slider_threshold)
 \item{slider_threshold}{max normalized distance from slider target}
 }
 \description{
-Also sets each item's chance to the probability that a uniformly random
-placement on the line lands within \code{slider_threshold} of the target, i.e.
-the length of the window \verb{[p - slider_threshold, p + slider_threshold]}
-clipped to \verb{[0, 1]}, where \code{p} is the target as a proportion of the line.
+Also fixes every slider item's chance at 0.15. Of single floors from 0.10 to
+0.30, 0.15 fit the math model best with the default \code{slider_threshold} of
+0.15 (levante-analysis, studies/2026-11_number-line). It is not derived from
+the threshold, so a different threshold needs its own floor.
 }

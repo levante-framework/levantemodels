@@ -20,8 +20,7 @@ A data frame of recoded, scoring-ready trials.
 scoring}: the calibrated models were fit on recoded trials, so scoring raw
 \code{get_trials()} output yields subtly wrong values. Corrections include slider
 thresholding (a response is correct within \code{slider_threshold} of the target,
-with chance set to the probability that a uniformly random placement lands
-within that window), Hearts & Flowers RT and
+with chance fixed at 0.15), Hearts & Flowers RT and
 start/stay/switch coding, Same/Different Selection and Theory of Mind
 recodes, known item-key fixes (e.g. \code{math_subtract_37_24}), and chance-level
 backfill. See \code{vignette("scoring-and-model-registry")}.

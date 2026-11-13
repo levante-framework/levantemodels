@@ -216,7 +216,7 @@ test_that("recode_trials() refuses to recode already-recoded data", {
   expect_error(recode_trials(once), "already been applied")
 })
 
-test_that("recode_trials() sets slider chance to random-placement probability", {
+test_that("recode_trials() fixes slider chance at 0.15", {
   df <- tibble(
     item_task = "math",
     item_group = "slider",
@@ -237,7 +237,7 @@ test_that("recode_trials() sets slider chance to random-placement probability", 
   out <- suppressMessages(recode_trials(df, slider_threshold = 0.15)) |>
     arrange(trial_number)
 
-  # window inside the line, clipped to one half, partly clipped
-  expect_equal(out$chance, c(0.3, 0.15, 0.25))
+  # the same floor wherever the target sits on the line
+  expect_equal(out$chance, rep(0.15, 3))
   expect_true(all(out$correct))
 })
