@@ -12,5 +12,8 @@ recode_slider(df, slider_threshold)
 \item{slider_threshold}{max normalized distance from slider target}
 }
 \description{
-Recode correctness for slider
+Also sets each item's chance to the probability that a uniformly random
+placement on the line lands within \code{slider_threshold} of the target, i.e.
+the length of the window \verb{[p - slider_threshold, p + slider_threshold]}
+clipped to \verb{[0, 1]}, where \code{p} is the target as a proportion of the line.
 }

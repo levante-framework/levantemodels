@@ -98,8 +98,10 @@ trials <- get_trials("levante_data_example:d0rt") |>
 `recode_trials()` performs several task-specific corrections, including:
 
 - **Slider items** (e.g. number line): marks a response correct when it falls
-  within `slider_threshold` (default 0.15) of the target, and sets the chance
-  level to `1 / slider_threshold / 100` accordingly.
+  within `slider_threshold` (default 0.15) of the target, and sets each item's
+  chance level to the probability that a uniformly random placement lands
+  within that window (`2 * slider_threshold`, less where the window runs off
+  the end of the line).
 - **Hearts & Flowers (`hf`)**: codes too-fast (<200 ms) and too-slow (>2000 ms)
   responses as incorrect and labels each trial start/stay/switch.
 - **Same/Different Selection (`sds`)** and **Theory of Mind (`tom`)**: recodes
