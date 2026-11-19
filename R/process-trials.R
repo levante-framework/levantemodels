@@ -79,6 +79,7 @@ process_trials <- function(dataset_spec,
     add_item_ids() |>
     filter(!remove_invalid_trials | .data$valid_trial) |>
     add_item_metadata() |>
+    remove_mismatched_task_trials() |>
     add_trial_numbers() |>
     mutate(task_id = .data$task_id |> stringr::str_remove("-es|-de$")) |>
     arrange(.data$task_id, .data$user_id, .data$run_id, .data$trial_number) |>
@@ -364,6 +365,36 @@ add_item_metadata <- function(trials, metadata_version = "current") {
     mutate(group = tidyr::replace_na(.data$group, ""),
            entry = tidyr::replace_na(.data$entry, "")) |>
     rename(item_original = "item", item_group = "group", item = "entry")
+}
+
+# item_task of each task_id's items
+task_item_tasks <- c(
+  "egma-math"                = "math",
+  "hearts-and-flowers"       = "hf",
+  "matrix-reasoning"         = "matrix",
+  "memory-game"              = "mg",
+  "mental-rotation"          = "mrot",
+  "same-different-selection" = "sds",
+  "theory-of-mind"           = "tom",
+  "trog"                     = "trog",
+  "vocab"                    = "vocab",
+  "pa"                       = "pa",
+  "sre"                      = "sre",
+  "swr"                      = "swr"
+)
+
+# remove trials whose items are from a different task than their run's task
+# (some runs have trials logged from another task, e.g. SDS run
+# 0GVD3creiyRyRI4t8B84 has HF trials); tasks not in task_item_tasks are kept
+remove_mismatched_task_trials <- function(trials) {
+  expected <- unname(task_item_tasks[stringr::str_remove(trials$task_id, "-es|-de$")])
+  mismatched <- !is.na(expected) & !is.na(trials$item_task) & trials$item_task != expected
+  if (any(mismatched)) {
+    message(glue::glue("Removing {sum(mismatched)} trial(s) in ",
+                       "{n_distinct(trials$run_id[mismatched])} run(s) whose ",
+                       "item_task doesn't match their task_id"))
+  }
+  trials[!mismatched, ]
 }
 
 # given list of item ID sources for each trial, whether each trial's only

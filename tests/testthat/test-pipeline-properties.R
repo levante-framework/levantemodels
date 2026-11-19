@@ -93,3 +93,17 @@ test_that("recovered abilities track the true thetas (coarse end-to-end sanity)"
   expect_gt(cor(scored$score, true_theta), 0.8)
   expect_lt(abs(mean(scored$score - true_theta)), 0.1)
 })
+
+test_that("remove_mismatched_task_trials() drops only trials from another task", {
+  trials <- tibble(
+    run_id = c("r1", "r1", "r1", "r2", "r3", "r4", "r5"),
+    task_id = c("same-different-selection", "same-different-selection",
+                "same-different-selection", "vocab-es", "trog", "mefs", "swr"),
+    item_task = c("sds", "hf", NA, "vocab", "hf", "mefs", "swr")
+  )
+
+  expect_message(out <- remove_mismatched_task_trials(trials),
+                 "Removing 2 trial\\(s\\) in 2 run\\(s\\)")
+  # mismatched trials dropped; NA item_task and unmapped task_ids kept
+  expect_equal(out$item_task, c("sds", NA, "vocab", "mefs", "swr"))
+})
