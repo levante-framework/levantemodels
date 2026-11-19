@@ -2,20 +2,21 @@
 % Please edit documentation in R/irt-registry.R
 \name{get_model_record}
 \alias{get_model_record}
-\title{Get the model record indexed in registry_dir for a given scoring specification}
+\title{Get the model record indexed in the registry for a given scoring specification}
 \usage{
-get_model_record(spec, registry_dir)
+get_model_record(spec, registry_dir = NULL)
 }
 \arguments{
-\item{spec}{Model specification (list with names item_task, model_set, subset, itemtype, nfact, invariance).}
+\item{spec}{Model specification (list with names item_task, model_set, subset, itemtype, nfact, invariance, and optionally registry_version).}
 
-\item{registry_dir}{Model registry directory as returned by \code{fetch_registry_dir()}.}
+\item{registry_dir}{Model registry directory as returned by \code{fetch_registry_dir()}, used if \code{spec} has no \code{registry_version}.}
 }
 \value{
 ModelRecord object
 }
 \description{
-Each model record is downloaded once per session and then reused. The cache
-holds one registry directory at a time: passing a different \code{registry_dir}
-(e.g. from a new call to \code{fetch_registry_dir()}) clears it.
+If \code{spec} has a non-missing \code{registry_version} (a column of the scoring
+table), the model record is fetched from that version of the registry;
+otherwise it is fetched from \code{registry_dir}. Each model record is
+downloaded once per session per registry directory and then reused.
 }

@@ -76,7 +76,7 @@ score_irt <- \(trial_data_task, mod_spec, mod_rec, method = "EAP") {
     rename(score = "F1", score_se = "SE_F1") |>
     mutate(run_id = rownames(data_prepped), .before = everything()) |>
     mutate(score_type = "ability", scoring_model = mod_spec_str(mod_spec),
-           registry_version = stringr::str_extract(mod_spec$redivis_source, "(?<=:)[^:]*$"))
+           registry_version = registry_version(mod_spec))
 }
 
 #' Scores from CAT
@@ -138,6 +138,13 @@ score_sre <- \(trial_data_task, dataset) {
     # select(-"elapsed", -"net")
 }
 
+# registry version a model spec's model record comes from: the spec's
+# registry_version if given, otherwise the scoring table's version
+registry_version <- \(spec) {
+  if (!is.null(spec$registry_version) && !is.na(spec$registry_version)) return(spec$registry_version)
+  stringr::str_extract(spec$redivis_source, "(?<=:)[^:]*$")
+}
+
 mod_spec_str <- \(spec) {
   spec[c("model_set", "subset", "itemtype", "nfact", "invariance")] |> purrr::discard(is.na) |> paste(collapse = "_")
 }
@@ -150,10 +157,11 @@ mod_spec_str <- \(spec) {
 #' @param trials trial data from one task and one dataset
 #' @param runs run data from one task and one dataset
 #' @param scoring_table tibble returned by fetch_scoring_table()
-#' @param registry_dir redivis directory returned by fetch_registry_dir()
+#' @param registry_dir redivis directory returned by fetch_registry_dir(),
+#'   used for scoring table rows with no `registry_version`
 #' @param exclusions optional exclusion table (e.g. from fetch_exclusions()),
 #'   applied to trials with apply_exclusions() before scoring
-score <- \(task, dataset, trials, runs, scoring_table, registry_dir, exclusions = NULL) {
+score <- \(task, dataset, trials, runs, scoring_table, registry_dir = NULL, exclusions = NULL) {
 
   message(glue::glue('Scoring data for task "{task}" and dataset "{dataset}"'))
   if (!is.null(exclusions)) trials <- apply_exclusions(trials, exclusions)
@@ -164,7 +172,6 @@ score <- \(task, dataset, trials, runs, scoring_table, registry_dir, exclusions 
   # custom_tasks <- list(pa = score_pa, sre = score_sre)
 
   # if scoring_table has entry for task + dataset, use that model spec
-  # TODO: make model depend on registry version in scoring table
   mod_spec <- get_model_spec(task, dataset, scoring_table)
   if (!is.null(mod_spec)) {
     mod_rec <- get_model_record(mod_spec, registry_dir)

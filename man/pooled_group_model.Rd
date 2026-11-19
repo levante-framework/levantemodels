@@ -19,4 +19,3 @@ pooled latent distribution of the model's groups, i.e. the mean and
 variance of the equally weighted mixture of the groups' normal
 distributions. Nothing is estimated.
 }
-\keyword{internal}

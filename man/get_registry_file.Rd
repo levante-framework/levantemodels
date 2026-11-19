@@ -9,7 +9,7 @@ get_registry_file(mod_filename, registry_dir)
 \arguments{
 \item{mod_filename}{Filename (string) of model record to fetch.}
 
-\item{registry_dir}{Model registry directory as returned by \code{fetch_registry_dir()}.}
+\item{registry_dir}{Model registry directory as returned by \code{fetch_registry_dir()}, used if \code{spec} has no \code{registry_version}.}
 }
 \description{
 Fetch file from model registry

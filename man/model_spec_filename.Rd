@@ -7,7 +7,7 @@
 model_spec_filename(spec)
 }
 \arguments{
-\item{spec}{Model specification (list with names item_task, model_set, subset, itemtype, nfact, invariance).}
+\item{spec}{Model specification (list with names item_task, model_set, subset, itemtype, nfact, invariance, and optionally registry_version).}
 }
 \description{
 Convert model spec to filename

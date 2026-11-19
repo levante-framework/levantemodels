@@ -2,7 +2,7 @@
 # by get_model_record() and model_from_record().
 
 clear_model_cache <- function() {
-  model_cache$registry_dir <- NULL
+  model_cache$registry_dirs <- list()
   model_cache$records <- list()
   model_cache$models <- list()
 }
@@ -27,9 +27,47 @@ test_that("get_model_record() downloads each model once per registry directory",
   expect_identical(rec_1, rec_2)
   expect_length(downloads, 2)
 
-  # a different registry directory clears the cache
+  # a different registry directory has its own records
   get_model_record(spec_a, registry_2)
   expect_length(downloads, 3)
+  get_model_record(spec_a, registry_1)
+  expect_length(downloads, 3)
+})
+
+test_that("get_model_record() fetches from the spec's registry_version", {
+  clear_model_cache()
+  withr::defer(clear_model_cache())
+  fx <- irt_fixture_multigroup()
+  dirs <- list(v1 = new.env(), v2 = new.env())
+  fetched <- character()
+  downloads <- list()
+  local_mocked_bindings(
+    fetch_registry_dir = function(version) {
+      fetched <<- c(fetched, version)
+      dirs[[version]]
+    },
+    get_registry_file = function(mod_filename, registry_dir) {
+      downloads <<- c(downloads, list(registry_dir))
+      fx$mod_rec
+    }
+  )
+  spec_v1 <- modifyList(fx$spec, list(registry_version = "v1"))
+  spec_v2 <- modifyList(fx$spec, list(registry_version = "v2"))
+  registry_dir <- new.env()
+
+  # the spec's version takes precedence over registry_dir, which isn't needed
+  get_model_record(spec_v1, registry_dir)
+  get_model_record(spec_v1)
+  get_model_record(spec_v2)
+  expect_identical(fetched, c("v1", "v2"))
+  expect_length(downloads, 2)
+  expect_identical(downloads[[1]], dirs$v1)
+  expect_identical(downloads[[2]], dirs$v2)
+
+  # a spec with a missing version uses registry_dir
+  get_model_record(modifyList(fx$spec, list(registry_version = NA)), registry_dir)
+  expect_identical(downloads[[3]], registry_dir)
+  expect_error(get_model_record(fx$spec), "registry_dir is needed")
 })
 
 test_that("model_from_record() reconstructs each model record once", {
