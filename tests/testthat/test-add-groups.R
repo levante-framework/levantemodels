@@ -94,6 +94,17 @@ test_that("score_irt() scores an added group under its own prior", {
   expect_s4_class(model_from_record(ext), "MultipleGroupClass")
 })
 
+test_that("adding groups doesn't change the scores of groups not in the model", {
+  fx <- irt_fixture_multigroup()
+  new <- new_group_data(fx, means = c(g3 = -1.5, g4 = 0.8), sds = c(g3 = 0.7, g4 = 1.2))
+  ext <- add_groups(fx$mod_rec, only(new, "g3"))
+  # g4 is not in either model, so both score it under the pooled prior of g1 and g2
+  g4_trials <- only(new, "g4")$task_data$data[[1]]
+
+  expect_identical(suppressMessages(score_irt(g4_trials, fx$spec, ext)),
+                   suppressMessages(score_irt(g4_trials, fx$spec, fx$mod_rec)))
+})
+
 test_that("add_groups_multigroup() refuses existing groups, small groups, and non-scalar models", {
   fx <- irt_fixture_multigroup()
   new <- new_group_data(fx, means = c(g3 = -0.5), sds = c(g3 = 0.7))
