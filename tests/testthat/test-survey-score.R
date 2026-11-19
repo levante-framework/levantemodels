@@ -100,8 +100,17 @@ test_that("pooled_single_group_partable() uses the equal-weight mixture of the g
   meta <- fx$rec$meta
   pt <- fx$rec$partable
   pooled <- pooled_single_group_partable(pt, meta)
-  expect_false(any(pooled$op == "~*~"))
-  mu <- sapply(1:2, \(g) pt$est[pt$group == g & pt$op == "~1" & pt$lhs == "fa"])
+  # scale factors are the ones implied in the theta parameterization
+  sc <- pooled[pooled$op == "~*~", ]
+  expect_setequal(sc$lhs, fx$items)
+  for (v in sc$lhs) {
+    lam <- pooled$ustart[pooled$op == "=~" & pooled$rhs == v]
+    f <- pooled$lhs[pooled$op == "=~" & pooled$rhs == v]
+    th <- pooled$ustart[pooled$op == "~~" & pooled$lhs == v & pooled$rhs == v]
+    S <- attr(pooled, "pooled")$cov
+    expect_equal(sc$ustart[sc$lhs == v], 1 / sqrt(drop(t(lam) %*% S[f, f, drop = FALSE] %*% lam) + th))
+  }
+  mu <-sapply(1:2, \(g) pt$est[pt$group == g & pt$op == "~1" & pt$lhs == "fa"])
   v <- sapply(1:2, \(g) pt$est[pt$group == g & pt$op == "~~" & pt$lhs == "fa" & pt$rhs == "fa"])
   expect_equal(pooled$ustart[pooled$op == "~1" & pooled$lhs == "fa"], mean(mu))
   expect_equal(pooled$ustart[pooled$op == "~~" & pooled$lhs == "fa" & pooled$rhs == "fa"],

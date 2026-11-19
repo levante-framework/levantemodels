@@ -63,10 +63,10 @@ survey_template_rows <- function(meta) {
 #     the residual variances (items independent given the factors), so
 #     residual covariances, in the pooled or in a group's own table, do not
 #     enter the scores.
-# The scale-factor rows (~*~) are dropped and the model is built in the theta
-# parameterization, where the residual variances are parameters: the averaged
-# residual variances are then used as they are. (For a group's own table both
-# parameterizations give the same scores.)
+# The model is built in the theta parameterization, where the residual
+# variances are parameters: the averaged residual variances are then used as
+# they are, and the scale-factor rows (~*~) are set to the values they imply.
+# (For a group's own table both parameterizations give the same scores.)
 pooled_single_group_partable <- function(pt, meta) {
   G <- seq_along(meta$group_labels)
   sg <- purrr::map(G, \(g) single_group_partable(pt, g))
@@ -94,8 +94,18 @@ pooled_single_group_partable <- function(pt, meta) {
   ut <- upper.tri(S); a <- lv[row(S)[ut]]; b <- lv[col(S)[ut]]
   miss <- which(abs(S[ut]) > 1e-12 & !paste(a, "~~", b) %in% key(out) & !paste(b, "~~", a) %in% key(out))
   stopifnot("pooled latent covariance not representable" = length(miss) == 0)
+  # scale factors (~*~): implied by the other parameters in the theta
+  # parameterization, 1 / sqrt(lambda' Psi lambda + theta); lavaan (>= 0.7)
+  # needs these rows in a theta-parameterized ordinal model
+  for (j in which(out$op == "~*~")) {
+    v <- out$lhs[j]
+    il <- which(out$op == "=~" & out$rhs == v)
+    th <- out$ustart[out$op == "~~" & out$lhs == v & out$rhs == v]
+    lam <- out$ustart[il]; f <- out$lhs[il]
+    out$ustart[j] <- 1 / sqrt(drop(t(lam) %*% S[f, f, drop = FALSE] %*% lam) + th)
+  }
   attr(out, "pooled") <- list(mean = stats::setNames(m, lv), cov = S)
-  out[out$op != "~*~", ]
+  out
 }
 
 # Scorer for scheme-B records (see top of file).
