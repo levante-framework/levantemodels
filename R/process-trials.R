@@ -79,6 +79,8 @@ process_trials <- function(dataset_spec,
     add_item_ids() |>
     filter(!remove_invalid_trials | .data$valid_trial) |>
     add_item_metadata() |>
+    remove_mismatched_task_trials() |>
+    remove_duplicate_run_trials() |>
     add_trial_numbers() |>
     mutate(task_id = .data$task_id |> stringr::str_remove("-es|-de$")) |>
     arrange(.data$task_id, .data$user_id, .data$run_id, .data$trial_number) |>
@@ -364,6 +366,58 @@ add_item_metadata <- function(trials, metadata_version = "current") {
     mutate(group = tidyr::replace_na(.data$group, ""),
            entry = tidyr::replace_na(.data$entry, "")) |>
     rename(item_original = "item", item_group = "group", item = "entry")
+}
+
+# item_task(s) of each task_id's items
+task_item_tasks <- list(
+  "adult-reasoning"          = "ar",
+  "egma-math"                = "math",
+  "hearts-and-flowers"       = "hf",
+  "matrix-reasoning"         = "matrix",
+  "memory-game"              = "mg",
+  "mental-rotation"          = "mrot",
+  "same-different-selection" = "sds",
+  "theory-of-mind"           = c("tom", "ha"),
+  "trog"                     = "trog",
+  "vocab"                    = "vocab",
+  "pa"                       = "pa",
+  "sre"                      = "sre",
+  "swr"                      = "swr"
+)
+
+# remove trials whose items are from a different task than their run's task
+# (some runs have trials logged from another task, e.g. SDS run
+# 0GVD3creiyRyRI4t8B84 has HF trials); tasks not in task_item_tasks are kept
+remove_mismatched_task_trials <- function(trials) {
+  task_id <- stringr::str_remove(trials$task_id, "-es|-de$")
+  task_items <- paste(rep(names(task_item_tasks), lengths(task_item_tasks)),
+                      unlist(task_item_tasks))
+  mismatched <- task_id %in% names(task_item_tasks) & !is.na(trials$item_task) &
+    !(paste(task_id, trials$item_task) %in% task_items)
+  if (any(mismatched)) {
+    message(glue::glue("Removing {sum(mismatched)} trial(s) in ",
+                       "{n_distinct(trials$run_id[mismatched])} run(s) whose ",
+                       "item_task doesn't match their task_id"))
+  }
+  trials[!mismatched, ]
+}
+
+# remove trials that are copies of trials in another run (when a task starts
+# while another run is still open, its trials are written to both runs; see
+# core-tasks#604), keeping the copy in the first run_id; copies have different
+# trial_ids and server timestamps but the same client-side fields
+remove_duplicate_run_trials <- function(trials) {
+  key_cols <- c("user_id", "time_elapsed", "trial_index", "item_uid", "response", "rt")
+  run_keys <- trials |>
+    filter(!is.na(.data$time_elapsed)) |>
+    distinct(across(all_of(c(key_cols, "run_id")))) |>
+    arrange(.data$run_id)
+  dups <- run_keys[duplicated(vctrs::vec_group_id(run_keys[key_cols])), ]
+  if (nrow(dups) > 0) {
+    message(glue::glue("Removing {nrow(dups)} trial(s) in {n_distinct(dups$run_id)} ",
+                       "run(s) that duplicate trials in another run"))
+  }
+  trials |> anti_join(dups, by = c(key_cols, "run_id"))
 }
 
 # given list of item ID sources for each trial, whether each trial's only
