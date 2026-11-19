@@ -96,14 +96,32 @@ test_that("recovered abilities track the true thetas (coarse end-to-end sanity)"
 
 test_that("remove_mismatched_task_trials() drops only trials from another task", {
   trials <- tibble(
-    run_id = c("r1", "r1", "r1", "r2", "r3", "r4", "r5"),
+    run_id = c("r1", "r1", "r1", "r2", "r3", "r4", "r5", "r6"),
     task_id = c("same-different-selection", "same-different-selection",
-                "same-different-selection", "vocab-es", "trog", "mefs", "swr"),
-    item_task = c("sds", "hf", NA, "vocab", "hf", "mefs", "swr")
+                "same-different-selection", "vocab-es", "trog", "mefs", "swr",
+                "theory-of-mind"),
+    item_task = c("sds", "hf", NA, "vocab", "hf", "mefs", "swr", "ha")
   )
 
   expect_message(out <- remove_mismatched_task_trials(trials),
                  "Removing 2 trial\\(s\\) in 2 run\\(s\\)")
-  # mismatched trials dropped; NA item_task and unmapped task_ids kept
-  expect_equal(out$item_task, c("sds", NA, "vocab", "mefs", "swr"))
+  # mismatched trials dropped; NA item_task, unmapped task_ids, and a task's
+  # other item_tasks kept
+  expect_equal(out$item_task, c("sds", NA, "vocab", "mefs", "swr", "ha"))
+})
+
+test_that("remove_duplicate_run_trials() drops copies of trials in another run", {
+  trials <- tibble(
+    trial_id = paste0("t", 1:7),
+    user_id = c("u1", "u1", "u1", "u1", "u1", "u2", "u1"),
+    run_id = c("r1", "r1", "r2", "r2", "r1", "r3", "r4"),
+    time_elapsed = c(100L, 200L, 100L, 300L, 100L, 100L, NA),
+    trial_index = 1L, item_uid = "hf_x", response = "left", rt = "500"
+  )
+
+  expect_message(out <- remove_duplicate_run_trials(trials),
+                 "Removing 1 trial\\(s\\) in 1 run\\(s\\)")
+  # copy in later run dropped; repeats within a run, other users' trials, and
+  # trials without time_elapsed kept
+  expect_equal(out$trial_id, c("t1", "t2", "t4", "t5", "t6", "t7"))
 })
