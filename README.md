@@ -32,6 +32,12 @@ devtools::install_github("levante-framework/levantemodels")
 - **IRT scoring** — `score()` / `score_irt()`, and the model
   registry accessors `fetch_scoring_table()`, `fetch_registry_table()`,
   `fetch_registry_dir()`.
+- **Survey scoring**: `score_surveys()` / `score_survey()` / `score_survey_cfa()`
+  give EBM factor scores for the child and caregiver surveys from multigroup
+  CFA models (lavaan), with the survey scoring table and model registry
+  accessors `fetch_survey_scoring_table()`, `fetch_survey_registry_dir()`,
+  `get_survey_model_spec()`, `get_survey_model_record()`;
+  `link_survey_scores()` attaches household caregiver scores to children.
 - **The `ModelRecord` class** and its accessors (`items()`, `model_vals()`,
   `model_class()`, `scores()`).
 

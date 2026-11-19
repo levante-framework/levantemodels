@@ -22,9 +22,11 @@ Depends:
 Imports:
     dplyr (>= 1.2.0),
     glue,
+    lavaan,
     methods,
-    purrr,
-    redivis
+    purrr (>= 1.0.0),
+    redivis,
+    tidyr
 Suggests: 
     forcats,
     jsonlite,
@@ -34,7 +36,6 @@ Suggests:
     rlang,
     stringr,
     tibble,
-    tidyr,
     ggplot2,
     knitr,
     mirt,
