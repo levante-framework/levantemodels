@@ -158,6 +158,8 @@ Fit and record sets of pooled or multigroup IRT models for a task.
 - [`fit_task_models_multigroup()`](https://levante-framework.github.io/levantemodels/reference/fit_task_models_multigroup.md)
   : For a given task and group variable, fit and record set of
   multigroup models
+- [`add_groups_multigroup()`](https://levante-framework.github.io/levantemodels/reference/add_groups_multigroup.md)
+  : Add new groups to a scalar multigroup model
 - [`fit_bylanguage_task()`](https://levante-framework.github.io/levantemodels/reference/fit_bylanguage_task.md)
   : Wrapper: given task, fit by_language model for each language
 - [`fit_bylanguage_lang()`](https://levante-framework.github.io/levantemodels/reference/fit_bylanguage_lang.md)
@@ -246,7 +248,7 @@ fitted models from the model registry.
 - [`fetch_registry_dir()`](https://levante-framework.github.io/levantemodels/reference/fetch_registry_dir.md)
   : Fetch model registry file index table
 - [`get_model_record()`](https://levante-framework.github.io/levantemodels/reference/get_model_record.md)
-  : Get the model record indexed in registry_dir for a given scoring
+  : Get the model record indexed in the registry for a given scoring
   specification
 - [`get_registry_file()`](https://levante-framework.github.io/levantemodels/reference/get_registry_file.md)
   : Fetch file from model registry

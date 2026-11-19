@@ -371,6 +371,44 @@ of each row), and `model_vals(mod_rec)` (the full
 [`mirt::mod2values()`](https://philchalmers.github.io/mirt/reference/mod2values.html)
 parameter table).
 
+## Adding groups to a scalar model
+
+Data from a new group (e.g. a new dataset) can be added to a scalar
+multigroup model without refitting it.
+[`add_groups_multigroup()`](https://levante-framework.github.io/levantemodels/reference/add_groups_multigroup.md)
+estimates only each new group’s latent mean and variance, with every
+item parameter and every existing group’s mean and variance held fixed,
+and returns a `ModelRecord` of the model with the new groups added. The
+existing groups’ parameters and scores are unchanged. This assumes that
+scalar invariance holds for the new groups, which it doesn’t test.
+
+Here a third site that saw only the first 10 items, simulated 0.5 SD
+lower than `site_a`:
+
+``` r
+
+new_data <- simulate_site("site_c", "es-CO", 250, -0.5, items$item_uid[1:10]) |>
+  mutate(item_task = "matrix") |>
+  nest(data = -c(item_task, dataset, language))
+
+mod_rec_ext <- add_groups_multigroup(mod_rec, new_data, task = "matrix", group = dataset)
+mod_rec_ext@group_names
+#> [1] "site_a" "site_b" "site_c"
+mod_rec_ext@fit$added_groups
+#> # A tibble: 1 × 7
+#>   group  n_runs n_items   mean mean_se   var var_se
+#>   <chr>   <dbl>   <int>  <dbl>   <dbl> <dbl>  <dbl>
+#> 1 site_c    250      10 -0.554  0.0896  1.05  0.210
+```
+
+Nothing is written to disk. Groups that are already in the model, or
+have fewer than `min_runs` (default 100) runs, are refused, so a group’s
+estimates are only changed by a deliberate recalibration. To use the new
+groups for scoring, save the record at the model’s registry path in a
+new version of the registry and add scoring table rows for the new
+groups (see
+[`vignette("scoring-and-model-registry")`](https://levante-framework.github.io/levantemodels/articles/scoring-and-model-registry.md)).
+
 ## Using real LEVANTE data
 
 To fit models to real data, build `task_data` from the raw (unprocessed)

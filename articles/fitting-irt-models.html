@@ -439,6 +439,40 @@ order), <code>mod_rec@groups</code> (group of each row), and
 <code><a href="https://philchalmers.github.io/mirt/reference/mod2values.html" class="external-link">mirt::mod2values()</a></code> parameter table).</p>
 </div>
 <div class="section level2">
+<h2 id="adding-groups-to-a-scalar-model">Adding groups to a scalar model<a class="anchor" aria-label="anchor" href="#adding-groups-to-a-scalar-model"></a>
+</h2>
+<p>Data from a new group (e.g. a new dataset) can be added to a scalar
+multigroup model without refitting it.
+<code><a href="../reference/add_groups_multigroup.html">add_groups_multigroup()</a></code> estimates only each new group’s
+latent mean and variance, with every item parameter and every existing
+group’s mean and variance held fixed, and returns a
+<code>ModelRecord</code> of the model with the new groups added. The
+existing groups’ parameters and scores are unchanged. This assumes that
+scalar invariance holds for the new groups, which it doesn’t test.</p>
+<p>Here a third site that saw only the first 10 items, simulated 0.5 SD
+lower than <code>site_a</code>:</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">new_data</span> <span class="op">&lt;-</span> <span class="fu">simulate_site</span><span class="op">(</span><span class="st">"site_c"</span>, <span class="st">"es-CO"</span>, <span class="fl">250</span>, <span class="op">-</span><span class="fl">0.5</span>, <span class="va">items</span><span class="op">$</span><span class="va">item_uid</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">]</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>item_task <span class="op">=</span> <span class="st">"matrix"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/nest.html" class="external-link">nest</a></span><span class="op">(</span>data <span class="op">=</span> <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">item_task</span>, <span class="va">dataset</span>, <span class="va">language</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">mod_rec_ext</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/add_groups_multigroup.html">add_groups_multigroup</a></span><span class="op">(</span><span class="va">mod_rec</span>, <span class="va">new_data</span>, task <span class="op">=</span> <span class="st">"matrix"</span>, group <span class="op">=</span> <span class="va">dataset</span><span class="op">)</span></span>
+<span><span class="va">mod_rec_ext</span><span class="op">@</span><span class="va">group_names</span></span>
+<span><span class="co">#&gt; [1] "site_a" "site_b" "site_c"</span></span>
+<span><span class="va">mod_rec_ext</span><span class="op">@</span><span class="va">fit</span><span class="op">$</span><span class="va">added_groups</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 7</span></span></span>
+<span><span class="co">#&gt;   group  n_runs n_items   mean mean_se   var var_se</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> site_c    250      10 -<span style="color: #BB0000;">0.554</span>  0.089<span style="text-decoration: underline;">6</span>  1.05  0.210</span></span></code></pre></div>
+<p>Nothing is written to disk. Groups that are already in the model, or
+have fewer than <code>min_runs</code> (default 100) runs, are refused,
+so a group’s estimates are only changed by a deliberate recalibration.
+To use the new groups for scoring, save the record at the model’s
+registry path in a new version of the registry and add scoring table
+rows for the new groups (see
+<code><a href="../articles/scoring-and-model-registry.html">vignette("scoring-and-model-registry")</a></code>).</p>
+</div>
+<div class="section level2">
 <h2 id="using-real-levante-data">Using real LEVANTE data<a class="anchor" aria-label="anchor" href="#using-real-levante-data"></a>
 </h2>
 <p>To fit models to real data, build <code>task_data</code> from the raw
@@ -448,7 +482,7 @@ runs, and adds item identifiers and metadata. Language comes from the
 run data and dataset from the participant data, and
 <code><a href="../reference/recode_trials.html">recode_trials()</a></code> then makes the trials ready for
 scoring:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dataset_spec</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>name <span class="op">=</span> <span class="st">"pilot_western_ca_main_raw:97mt"</span>, version <span class="op">=</span> <span class="st">"v15_28"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>

@@ -13,4 +13,4 @@ model_spec_filename(spec)
 - spec:
 
   Model specification (list with names item_task, model_set, subset,
-  itemtype, nfact, invariance).
+  itemtype, nfact, invariance, and optionally registry_version).

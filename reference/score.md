@@ -11,7 +11,7 @@ score(
   trials,
   runs,
   scoring_table,
-  registry_dir,
+  registry_dir = NULL,
   exclusions = NULL
 )
 ```
@@ -40,7 +40,8 @@ score(
 
 - registry_dir:
 
-  redivis directory returned by fetch_registry_dir()
+  redivis directory returned by fetch_registry_dir(), used for scoring
+  table rows with no `registry_version`
 
 - exclusions:
 

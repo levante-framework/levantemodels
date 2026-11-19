@@ -133,6 +133,13 @@ fetch_registry_dir()                # handle for downloading the fitted model
 
 score(task, dataset, trials, runs,  # -&gt; downloads the ModelRecord, shapes the
       scoring_table, registry_dir)  #    data, rebuilds the model, scores it</code></pre>
+<p>The scoring table and the registry are versioned separately. A
+scoring table row can name the registry version its model comes from in
+a <code>registry_version</code> column (e.g. <code>"v2_5"</code>), in
+which case <code><a href="../reference/score.html">score()</a></code> downloads the model from that version;
+rows without one use <code>registry_dir</code>. Scores record the
+registry version they came from in their <code>registry_version</code>
+column.</p>
 </div>
 <div class="section level2">
 <h2 id="pinning-a-dataset-version">Pinning a dataset version<a class="anchor" aria-label="anchor" href="#pinning-a-dataset-version"></a>

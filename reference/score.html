@@ -54,7 +54,7 @@
 <span>  <span class="va">trials</span>,</span>
 <span>  <span class="va">runs</span>,</span>
 <span>  <span class="va">scoring_table</span>,</span>
-<span>  <span class="va">registry_dir</span>,</span>
+<span>  registry_dir <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  exclusions <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -84,7 +84,8 @@
 
 
 <dt id="arg-registry-dir">registry_dir<a class="anchor" aria-label="anchor" href="#arg-registry-dir"></a></dt>
-<dd><p>redivis directory returned by fetch_registry_dir()</p></dd>
+<dd><p>redivis directory returned by fetch_registry_dir(),
+used for scoring table rows with no <code>registry_version</code></p></dd>
 
 
 <dt id="arg-exclusions">exclusions<a class="anchor" aria-label="anchor" href="#arg-exclusions"></a></dt>

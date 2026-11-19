@@ -44,6 +44,14 @@ End to end, scoring a task flows like this:
     score(task, dataset, trials, runs,  # -> downloads the ModelRecord, shapes the
           scoring_table, registry_dir)  #    data, rebuilds the model, scores it
 
+The scoring table and the registry are versioned separately. A scoring
+table row can name the registry version its model comes from in a
+`registry_version` column (e.g. `"v2_5"`), in which case
+[`score()`](https://levante-framework.github.io/levantemodels/reference/score.md)
+downloads the model from that version; rows without one use
+`registry_dir`. Scores record the registry version they came from in
+their `registry_version` column.
+
 ## Pinning a dataset version
 
 Every rlevante “get” function takes a `data_source` and a `version`. For

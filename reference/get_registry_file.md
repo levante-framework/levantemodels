@@ -17,4 +17,5 @@ get_registry_file(mod_filename, registry_dir)
 - registry_dir:
 
   Model registry directory as returned by
-  [`fetch_registry_dir()`](https://levante-framework.github.io/levantemodels/reference/fetch_registry_dir.md).
+  [`fetch_registry_dir()`](https://levante-framework.github.io/levantemodels/reference/fetch_registry_dir.md),
+  used if `spec` has no `registry_version`.
