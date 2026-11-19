@@ -50,12 +50,15 @@ test_that("add_groups_multigroup() matches a fit to the new group's data alone",
   pars$est <- pars$name %in% c("MEAN_1", "COV_11")
   resp <- new$resp
   colnames(resp) <- items(fx$mod_rec)
-  alone <- mirt::mirt(resp, pars = pars, verbose = FALSE)
-  alone_pars <- mirt::coef(alone)$GroupPars
+  alone <- mirt::mirt(resp, pars = pars, SE = TRUE, verbose = FALSE)
+  alone_pars <- mirt::coef(alone, printSE = TRUE)$GroupPars
 
   added <- ext@fit$added_groups
-  expect_equal(added$mean, alone_pars[, "MEAN_1"], tolerance = 1e-3)
-  expect_equal(added$var, alone_pars[, "COV_11"], tolerance = 1e-3)
+  expect_equal(added$mean, alone_pars["par", "MEAN_1"], tolerance = 1e-3)
+  expect_equal(added$var, alone_pars["par", "COV_11"], tolerance = 1e-3)
+  # standard errors as mirt's (which uses a coarser quadrature)
+  expect_equal(added$mean_se, alone_pars["SE", "MEAN_1"], tolerance = 0.02)
+  expect_equal(added$var_se, alone_pars["SE", "COV_11"], tolerance = 0.02)
   # and recovers the generating distribution
   expect_lt(abs(added$mean - -0.5), 4 * added$mean_se)
   expect_lt(abs(added$var - 0.49), 4 * added$var_se)

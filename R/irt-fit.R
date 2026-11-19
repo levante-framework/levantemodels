@@ -410,7 +410,6 @@ add_groups_multigroup <- \(mod_rec, task_data, task, group, min_runs = 100) {
     data = rbind(mod_rec@data, data_new),
     group = factor(c(mod_rec@groups, groups_new), levels = group_levels),
     pars = est_vals,
-    SE = TRUE,
     verbose = FALSE,
     technical = list(NCYCLES = 5000)
   )
@@ -422,13 +421,13 @@ add_groups_multigroup <- \(mod_rec, task_data, task, group, min_runs = 100) {
                              tolerance = 1e-10)))
 
   # new groups' estimates and standard errors
-  group_pars <- mirt::coef(mod, printSE = TRUE)
   added <- purrr::map(new_groups, \(g) {
-    gp <- group_pars[[g]]$GroupPars
+    gp <- mirt::coef(mod)[[g]]$GroupPars
+    se <- group_dist_se(mod, g, gp[1, "MEAN_1"], gp[1, "COV_11"])
     dplyr::tibble(group = g, n_runs = as.numeric(n_runs[[g]]),
                   n_items = sum(colSums(!is.na(data_new[groups_new == g, , drop = FALSE])) > 0),
-                  mean = gp["par", "MEAN_1"], mean_se = gp["SE", "MEAN_1"],
-                  var = gp["par", "COV_11"], var_se = gp["SE", "COV_11"])
+                  mean = gp[1, "MEAN_1"], mean_se = se[[1]],
+                  var = gp[1, "COV_11"], var_se = se[[2]])
   }) |> purrr::list_rbind()
   for (g in new_groups) {
     for (p in c("MEAN_1", "COV_11")) {
@@ -442,6 +441,26 @@ add_groups_multigroup <- \(mod_rec, task_data, task, group, min_runs = 100) {
   ext_rec@invariance <- mod_rec@invariance
   ext_rec@fit$added_groups <- dplyr::bind_rows(mod_rec@fit$added_groups, added)
   ext_rec
+}
+
+# standard errors of one group's latent mean and variance in a multigroup model
+# whose other parameters are fixed: from the observed information of the
+# group's marginal log-likelihood, by quadrature over theta. mirt's SE = TRUE
+# gives the same values, but its cost grows quickly with the number of items.
+group_dist_se <- \(mod, group, mean, var, theta = seq(-8, 8, length.out = 401)) {
+  group_mod <- mirt::extract.group(mod, group)
+  # indicators of each run's response categories, and their probabilities at theta
+  resp <- group_mod@Data$fulldata[[1]]
+  probs <- do.call(cbind, lapply(seq_len(mirt::extract.mirt(group_mod, "nitems")), \(j) {
+    mirt::probtrace(mirt::extract.item(group_mod, j), matrix(theta))
+  }))
+  loglik_theta <- resp %*% t(log(probs))
+  row_max <- apply(loglik_theta, 1, max)
+  loglik <- \(p) {
+    w <- stats::dnorm(theta, p[1], sqrt(p[2]))
+    sum(row_max + log(exp(loglik_theta - row_max) %*% (w / sum(w))))
+  }
+  sqrt(diag(solve(-stats::optimHess(c(mean, var), loglik))))
 }
 
 # example calls: pooled models
