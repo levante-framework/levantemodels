@@ -8,3 +8,4 @@
 ^\.github$
 ^LICENSE\.md$
 CLAUDE.md
+^\.claude$
