@@ -262,6 +262,36 @@ matrix, with columns in `items(mod_rec)` order), `mod_rec@groups` (group of
 each row), and `model_vals(mod_rec)` (the full `mirt::mod2values()`
 parameter table).
 
+## Adding groups to a scalar model
+
+Data from a new group (e.g. a new dataset) can be added to a scalar multigroup
+model without refitting it. `add_groups_multigroup()` estimates only each new
+group's latent mean and variance, with every item parameter and every existing
+group's mean and variance held fixed, and returns a `ModelRecord` of the model
+with the new groups added. The existing groups' parameters and scores are
+unchanged. This assumes that scalar invariance holds for the new groups, which
+it doesn't test.
+
+Here a third site that saw only the first 10 items, simulated 0.5 SD lower
+than `site_a`:
+
+```{r add-groups}
+new_data <- simulate_site("site_c", "es-CO", 250, -0.5, items$item_uid[1:10]) |>
+  mutate(item_task = "matrix") |>
+  nest(data = -c(item_task, dataset, language))
+
+mod_rec_ext <- add_groups_multigroup(mod_rec, new_data, task = "matrix", group = dataset)
+mod_rec_ext@group_names
+mod_rec_ext@fit$added_groups
+```
+
+Nothing is written to disk. Groups that are already in the model, or have
+fewer than `min_runs` (default 100) runs, are refused, so a group's estimates
+are only changed by a deliberate recalibration. To use the new groups for
+scoring, save the record at the model's registry path in a new version of the
+registry and add scoring table rows for the new groups (see
+`vignette("scoring-and-model-registry")`).
+
 ## Using real LEVANTE data
 
 To fit models to real data, build `task_data` from the raw (unprocessed)

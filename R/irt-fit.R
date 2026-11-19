@@ -315,6 +315,135 @@ fit_task_models_multigroup <- \(task_data, models, priors, task, group,
     })
 }
 
+#' Add new groups to a scalar multigroup model
+#'
+#' Estimates the latent mean and variance of each new group in `task_data`
+#' with every item parameter and every existing group's mean and variance held
+#' fixed at their values in `mod_rec` (fixed item parameter calibration), and
+#' returns a [ModelRecord] of the model with the new groups added. Nothing is
+#' written to disk.
+#'
+#' The model is fit to the record's calibration data together with the new
+#' groups' data, so that every item has the response categories it was
+#' calibrated with. Since everything else is fixed, each new group's estimates
+#' depend only on its own data, and are the same whether groups are added
+#' together or one at a time. The existing groups' parameters are unchanged,
+#' so their scores are too.
+#'
+#' Trials are prepared as for scoring: `NA` `correct` is dropped and
+#' repeated presentations are numbered by [dedupe_items()]. Items not in the
+#' model are dropped (items with no variance are kept, since their parameters
+#' are fixed), as are runs with no responses to the model's items. This
+#' assumes scalar invariance holds for the new groups and does not test it.
+#'
+#' In the returned record, each new group's parameter values are those of the
+#' model's second group with its own mean and variance, and the fit statistics
+#' and convergence are those of the estimation of the new groups' means and
+#' variances. `mod_rec@fit$added_groups` accumulates, over successive
+#' additions, a tibble with each added group's number of runs, number of the
+#' model's items with responses, and estimated mean and variance with their
+#' standard errors.
+#'
+#' @inheritParams fit_task_models_multigroup
+#' @param mod_rec ModelRecord object for a scalar multigroup model
+#' @param group variable whose values are the new groups (string or bare
+#'   variable); can be a column of either `task_data` or the nested `data`.
+#'   None of its values can already be groups in `mod_rec`.
+#' @param min_runs minimum number of runs for a new group
+#' @returns ModelRecord object
+#' @export
+add_groups_multigroup <- \(mod_rec, task_data, task, group, min_runs = 100) {
+
+  group_name <- rlang::as_name(rlang::enquo(group))
+
+  stopifnot("mod_rec must be a scalar multigroup model" =
+              model_class(mod_rec) == "MultipleGroupClass" &&
+              setequal(mod_rec@invariance, invariances$scalar))
+
+  trials <- task_data |>
+    filter(.data$item_task == task) |>
+    tidyr::unnest("data") |>
+    rename(group = all_of(group_name)) |>
+    mutate(item_uid = as.character(.data$item_uid)) |>
+    filter(!is.na(.data$correct))
+
+  # align new data to the model's items, dropping runs with none of them
+  data_wide <- trials |> dedupe_items() |> to_mirt_shape_grouped()
+  resp <- data_wide |> select(-"group") |> as.matrix()
+  data_new <- matrix(NA_real_, nrow(resp), length(items(mod_rec)),
+                     dimnames = list(rownames(resp), items(mod_rec)))
+  shared_items <- intersect(items(mod_rec), colnames(resp))
+  data_new[, shared_items] <- resp[, shared_items]
+  has_resp <- rowSums(!is.na(data_new)) > 0
+  if (any(!has_resp)) message(glue::glue("Dropping {sum(!has_resp)} runs with no responses to the model's items"))
+  data_new <- data_new[has_resp, , drop = FALSE]
+  groups_new <- data_wide$group[has_resp]
+
+  new_groups <- sort(unique(groups_new))
+  existing <- intersect(new_groups, mod_rec@group_names)
+  if (length(existing) > 0) stop(glue::glue("Groups already in the model: {paste(existing, collapse = ', ')}"))
+  n_runs <- table(groups_new)[new_groups]
+  too_small <- new_groups[n_runs < min_runs]
+  if (length(too_small) > 0) stop(glue::glue("Groups with fewer than {min_runs} runs: {paste(too_small, collapse = ', ')}"))
+
+  # new groups' parameter values: the second group's (the first is the
+  # reference group, whose mean is fixed), with new parameter numbers
+  base_vals <- model_vals(mod_rec)
+  template <- base_vals[base_vals$group == mod_rec@group_names[[2]], ]
+  new_vals <- purrr::imap(new_groups, \(g, i) {
+    vals <- template
+    vals$group <- g
+    vals$parnum <- max(base_vals$parnum) + (i - 1L) * nrow(template) + seq_len(nrow(template))
+    vals
+  }) |> purrr::list_rbind()
+  ext_vals <- rbind(base_vals, new_vals)
+  rownames(ext_vals) <- NULL
+
+  # estimate only the new groups' means and variances (mirt only allows
+  # equality constraints on estimated parameters)
+  est_vals <- ext_vals
+  est_vals$est <- est_vals$group %in% new_groups & est_vals$name %in% c("MEAN_1", "COV_11")
+  est_vals$const <- "none"
+
+  group_levels <- c(mod_rec@group_names, new_groups)
+  mod <- mirt::multipleGroup(
+    data = rbind(mod_rec@data, data_new),
+    group = factor(c(mod_rec@groups, groups_new), levels = group_levels),
+    pars = est_vals,
+    SE = TRUE,
+    verbose = FALSE,
+    technical = list(NCYCLES = 5000)
+  )
+
+  # check that the fixed parameters didn't move (mirt can change them in the
+  # last bit; the returned record keeps the original values)
+  fitted_vals <- mirt::mod2values(mod)
+  stopifnot(isTRUE(all.equal(fitted_vals$value[seq_len(nrow(base_vals))], base_vals$value,
+                             tolerance = 1e-10)))
+
+  # new groups' estimates and standard errors
+  group_pars <- mirt::coef(mod, printSE = TRUE)
+  added <- purrr::map(new_groups, \(g) {
+    gp <- group_pars[[g]]$GroupPars
+    dplyr::tibble(group = g, n_runs = as.numeric(n_runs[[g]]),
+                  n_items = sum(colSums(!is.na(data_new[groups_new == g, , drop = FALSE])) > 0),
+                  mean = gp["par", "MEAN_1"], mean_se = gp["SE", "MEAN_1"],
+                  var = gp["par", "COV_11"], var_se = gp["SE", "COV_11"])
+  }) |> purrr::list_rbind()
+  for (g in new_groups) {
+    for (p in c("MEAN_1", "COV_11")) {
+      ext_vals$value[ext_vals$group == g & ext_vals$name == p] <-
+        fitted_vals$value[fitted_vals$group == g & fitted_vals$name == p]
+    }
+  }
+
+  ext_rec <- modelrecord(mod, c(mod_rec@runs, rownames(data_new)))
+  ext_rec@model_vals <- ext_vals
+  ext_rec@invariance <- mod_rec@invariance
+  ext_rec@fit$added_groups <- dplyr::bind_rows(mod_rec@fit$added_groups, added)
+  ext_rec
+}
+
 # example calls: pooled models
 
 # fit one task + one language
