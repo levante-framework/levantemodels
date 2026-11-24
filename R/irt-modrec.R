@@ -38,10 +38,7 @@ count_items <- \(mod_rec) {
 #' @param item_sep separator between item and instance index
 #' @export
 mod_coefs <- \(mod_rec, item_sep = "-") {
-  n_resp <- bind_cols(group = mod_rec@groups, mod_rec@data) |>
-    tidyr::pivot_longer(cols = -"group", names_to = "item", values_to = "correct") |>
-    filter(!is.na(.data$correct)) |>
-    count(.data$item, .data$group, name = "n_responses")
+  n_resp <- response_counts(mod_rec)
   model_vals(mod_rec) |>
     as_tibble() |>
     filter(.data$group != "GROUP", .data$item != "GROUP") |>
