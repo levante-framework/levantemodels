@@ -6,10 +6,10 @@ output scoring-ready, and **must be applied before IRT scoring**: the
 calibrated models were fit on recoded trials, so scoring raw
 `get_trials()` output yields subtly wrong values. Corrections include
 slider thresholding (a response is correct within `slider_threshold` of
-the target, with chance set to `1 / slider_threshold / 100`), Hearts &
-Flowers RT and start/stay/switch coding, Same/Different Selection and
-Theory of Mind recodes, known item-key fixes (e.g.
-`math_subtract_37_24`), and chance-level backfill. See
+the target, with chance fixed at 0.15), Hearts & Flowers RT and
+start/stay/switch coding, Same/Different Selection and Theory of Mind
+recodes, known item-key fixes (e.g. `math_subtract_37_24`), and
+chance-level backfill. See
 [`vignette("scoring-and-model-registry")`](https://levante-framework.github.io/levantemodels/articles/scoring-and-model-registry.md).
 
 ## Usage

@@ -183,8 +183,8 @@ corrections, including:</p>
 <li>
 <strong>Slider items</strong> (e.g. number line): marks a response
 correct when it falls within <code>slider_threshold</code> (default
-0.15) of the target, and sets the chance level to
-<code>1 / slider_threshold / 100</code> accordingly.</li>
+0.15) of the target, and fixes the chance level of every slider item at
+0.15, the floor that fit the math model best with that threshold.</li>
 <li>
 <strong>Hearts &amp; Flowers (<code>hf</code>)</strong>: codes
 too-fast (&lt;200 ms) and too-slow (&gt;2000 ms) responses as incorrect
