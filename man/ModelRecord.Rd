@@ -3,6 +3,8 @@
 \name{modelrecord}
 \alias{modelrecord}
 \alias{extract_scores}
+\alias{count_responses}
+\alias{count_runs}
 \alias{show,ModelRecord-method}
 \alias{AIC,ModelRecord-method}
 \alias{BIC,ModelRecord-method}
@@ -11,6 +13,8 @@
 \alias{model_vals}
 \alias{items}
 \alias{scores}
+\alias{response_counts}
+\alias{run_counts}
 \alias{tabdata}
 \alias{convergence}
 \title{Constructor helper}
@@ -18,6 +22,10 @@
 modelrecord(mod, row_ids)
 
 extract_scores(mod, row_ids)
+
+count_responses(data, groups)
+
+count_runs(groups)
 
 \S4method{show}{ModelRecord}(object)
 
@@ -35,6 +43,10 @@ items(object)
 
 scores(object)
 
+response_counts(object)
+
+run_counts(object)
+
 tabdata(object)
 
 convergence(object)
@@ -47,6 +59,14 @@ convergence(object)
 \item{object}{ModelRecord object}
 }
 \value{
+\code{response_counts()}: tibble with \code{group}, \code{item}, and \code{n_responses}
+(number of non-NA calibration responses); for records created before these
+were stored, computed from the calibration data
+
+\code{run_counts()}: tibble with \code{group} and \code{n_runs} (number of
+calibration runs); for records created before these were stored, computed
+from the calibration groups
+
 \code{convergence()}: one-row tibble with \code{converged} (whether
 estimation converged) and \code{iterations} (number of EM cycles); both \code{NA}
 for records created before these were stored
@@ -55,6 +75,10 @@ for records created before these were stored
 Constructor helper
 
 Helper to extract and tidy scores
+
+Helper to count non-NA responses per group and item
+
+Helper to count runs per group
 
 Method for show generic
 

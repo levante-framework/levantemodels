@@ -8,6 +8,6 @@
 \description{
 A fitted LEVANTE IRT model and its metadata, as stored in the model
 registry. Access its contents with \code{\link[=items]{items()}}, \code{\link[=model_class]{model_class()}},
-\code{\link[=model_vals]{model_vals()}}, and \code{\link[=scores]{scores()}}; see
+\code{\link[=model_vals]{model_vals()}}, \code{\link[=scores]{scores()}}, \code{\link[=response_counts]{response_counts()}}, and \code{\link[=run_counts]{run_counts()}}; see
 \code{vignette("scoring-and-model-registry")} for details.
 }

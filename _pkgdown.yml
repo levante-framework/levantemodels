@@ -87,6 +87,7 @@ reference:
     - item_info
     - empirical_reliability
     - pooled_group_model
+    - sanitize_record
 
   - title: Inspecting fitted models
     desc: >
