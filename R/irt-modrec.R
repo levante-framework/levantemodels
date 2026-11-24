@@ -109,13 +109,15 @@ empirical_reliability <- \(mod_rec) {
 #' returns a single group model with the shared item parameters and the
 #' pooled latent distribution of the model's groups, i.e. the mean and
 #' variance of the equally weighted mixture of the groups' normal
-#' distributions. Nothing is estimated.
+#' distributions. Nothing is estimated. Groups added by
+#' [add_groups_multigroup()] are left out, so that adding groups doesn't change
+#' the scores of groups that aren't in the model.
 #'
 #' @param mod_rec ModelRecord object for a scalar multigroup model
 #' @return mirt SingleGroupClass model
 pooled_group_model <- \(mod_rec) {
   mod_vals <- model_vals(mod_rec)
-  group_names <- mod_rec@group_names
+  group_names <- setdiff(mod_rec@group_names, mod_rec@fit$added_groups$group)
   group_par <- \(par) mod_vals$value[match(paste(group_names, par), paste(mod_vals$group, mod_vals$name))]
   means <- group_par("MEAN_1")
   vars <- group_par("COV_11")

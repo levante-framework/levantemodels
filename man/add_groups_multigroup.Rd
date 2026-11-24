@@ -39,7 +39,9 @@ groups' data, so that every item has the response categories it was
 calibrated with. Since everything else is fixed, each new group's estimates
 depend only on its own data, and are the same whether groups are added
 together or one at a time. The existing groups' parameters are unchanged,
-so their scores are too.
+so their scores are too. Groups that still aren't in the model are scored
+under the pooled prior of the original groups only (see
+\code{\link[=pooled_group_model]{pooled_group_model()}}), so their scores don't change either.
 
 Trials are prepared as for scoring: \code{NA} \code{correct} is dropped and
 repeated presentations are numbered by \code{\link[=dedupe_items]{dedupe_items()}}. Items not in the
