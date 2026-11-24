@@ -121,6 +121,22 @@ reference:
     - model_spec_filename
     - model_from_record
 
+  - title: Survey scoring
+    desc: >
+      Score the child and caregiver surveys with multigroup CFA models
+      (lavaan EBM factor scores), look up survey scoring specifications and
+      model records, and attach household caregiver scores to children.
+    contents:
+    - score_surveys
+    - score_survey
+    - score_survey_cfa
+    - link_survey_scores
+    - fetch_survey_scoring_table
+    - fetch_survey_registry_dir
+    - get_survey_model_spec
+    - get_survey_model_record
+    - survey_model_spec_filename
+
   - title: Utilities
     contents:
     - notebook_dataset
