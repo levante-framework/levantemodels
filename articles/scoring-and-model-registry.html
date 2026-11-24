@@ -7,7 +7,7 @@
 <title>Scoring and the model registry • levantemodels</title>
 <script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/Fira_Code-0.4.10/font.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/Fira_Code-0.5.0/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
@@ -279,6 +279,14 @@ them</strong>
 <td>the <strong>calibration-time</strong> EAP scores
 (<code>run_id</code>, <code>ability</code>, <code>se</code>)</td>
 </tr>
+<tr class="odd">
+<td><code>response_counts(mod_rec)</code></td>
+<td>the number of non-NA calibration responses per group and item</td>
+</tr>
+<tr class="even">
+<td><code>run_counts(mod_rec)</code></td>
+<td>the number of calibration runs per group</td>
+</tr>
 </tbody>
 </table>
 <p>Some details are exposed as S4 slots:</p>
@@ -320,6 +328,12 @@ reference you can validate a rescore against:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># rescoring the calibration runs should reproduce scores(mod_rec)$ability</span></span>
 <span><span class="fu"><a href="../reference/ModelRecord.html">scores</a></span><span class="op">(</span><span class="va">mod_rec</span><span class="op">)</span></span></code></pre></div>
+<p><code><a href="../reference/sanitize_record.html">sanitize_record()</a></code> removes the calibration data from a
+model record, for publishing it: it drops the runs and scores and
+replaces <code>mod_rec@data</code> with a minimal placeholder that keeps
+each item’s response categories, which is all that scoring needs. A
+sanitized record scores new data identically and keeps
+<code><a href="../reference/ModelRecord.html">response_counts()</a></code> and <code><a href="../reference/ModelRecord.html">run_counts()</a></code>.</p>
 </div>
 <div class="section level2">
 <h2 id="the-guessing-parameter-lower-asymptote">The guessing parameter (lower asymptote)<a class="anchor" aria-label="anchor" href="#the-guessing-parameter-lower-asymptote"></a>

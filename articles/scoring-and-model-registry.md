@@ -165,6 +165,8 @@ mod_rec <- get_registry_file(model_spec_filename(spec), fetch_registry_dir())
 | `model_class(mod_rec)` | `"SingleGroupClass"` or `"MultipleGroupClass"` |
 | `model_vals(mod_rec)` | the `mirt` parameter table for the fitted model |
 | `scores(mod_rec)` | the **calibration-time** EAP scores (`run_id`, `ability`, `se`) |
+| `response_counts(mod_rec)` | the number of non-NA calibration responses per group and item |
+| `run_counts(mod_rec)` | the number of calibration runs per group |
 
 Some details are exposed as S4 slots:
 
@@ -188,6 +190,16 @@ is a ground-truth reference you can validate a rescore against:
 # rescoring the calibration runs should reproduce scores(mod_rec)$ability
 scores(mod_rec)
 ```
+
+[`sanitize_record()`](https://levante-framework.github.io/levantemodels/reference/sanitize_record.md)
+removes the calibration data from a model record, for publishing it: it
+drops the runs and scores and replaces `mod_rec@data` with a minimal
+placeholder that keeps each item’s response categories, which is all
+that scoring needs. A sanitized record scores new data identically and
+keeps
+[`response_counts()`](https://levante-framework.github.io/levantemodels/reference/ModelRecord.md)
+and
+[`run_counts()`](https://levante-framework.github.io/levantemodels/reference/ModelRecord.md).
 
 ## The guessing parameter (lower asymptote)
 

@@ -175,6 +175,8 @@ and scores, and provides accessors for them.
   : ModelRecord class definition
 - [`modelrecord()`](https://levante-framework.github.io/levantemodels/reference/ModelRecord.md)
   [`extract_scores()`](https://levante-framework.github.io/levantemodels/reference/ModelRecord.md)
+  [`count_responses()`](https://levante-framework.github.io/levantemodels/reference/ModelRecord.md)
+  [`count_runs()`](https://levante-framework.github.io/levantemodels/reference/ModelRecord.md)
   [`show(`*`<ModelRecord>`*`)`](https://levante-framework.github.io/levantemodels/reference/ModelRecord.md)
   [`AIC(`*`<ModelRecord>`*`)`](https://levante-framework.github.io/levantemodels/reference/ModelRecord.md)
   [`BIC(`*`<ModelRecord>`*`)`](https://levante-framework.github.io/levantemodels/reference/ModelRecord.md)
@@ -183,6 +185,8 @@ and scores, and provides accessors for them.
   [`model_vals()`](https://levante-framework.github.io/levantemodels/reference/ModelRecord.md)
   [`items()`](https://levante-framework.github.io/levantemodels/reference/ModelRecord.md)
   [`scores()`](https://levante-framework.github.io/levantemodels/reference/ModelRecord.md)
+  [`response_counts()`](https://levante-framework.github.io/levantemodels/reference/ModelRecord.md)
+  [`run_counts()`](https://levante-framework.github.io/levantemodels/reference/ModelRecord.md)
   [`tabdata()`](https://levante-framework.github.io/levantemodels/reference/ModelRecord.md)
   [`convergence()`](https://levante-framework.github.io/levantemodels/reference/ModelRecord.md)
   : Constructor helper
@@ -197,6 +201,8 @@ and scores, and provides accessors for them.
 - [`pooled_group_model()`](https://levante-framework.github.io/levantemodels/reference/pooled_group_model.md)
   : Single group model with the pooled distribution of a multigroup
   model's groups
+- [`sanitize_record()`](https://levante-framework.github.io/levantemodels/reference/sanitize_record.md)
+  : Remove calibration data from a model record
 
 ## Inspecting fitted models
 
