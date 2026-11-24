@@ -52,7 +52,10 @@ groups' data, so that every item has the response categories it was
 calibrated with. Since everything else is fixed, each new group's
 estimates depend only on its own data, and are the same whether groups
 are added together or one at a time. The existing groups' parameters are
-unchanged, so their scores are too.
+unchanged, so their scores are too. Groups that still aren't in the
+model are scored under the pooled prior of the original groups only (see
+[`pooled_group_model()`](https://levante-framework.github.io/levantemodels/reference/pooled_group_model.md)),
+so their scores don't change either.
 
 Trials are prepared as for scoring: `NA` `correct` is dropped and
 repeated presentations are numbered by

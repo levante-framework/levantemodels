@@ -3,11 +3,15 @@
 returns a single group model with the shared item parameters and the
 pooled latent distribution of the model's groups, i.e. the mean and
 variance of the equally weighted mixture of the groups' normal
-distributions. Nothing is estimated."><meta property="og:description" content="For scoring data from a group that is not in a scalar multigroup model:
+distributions. Nothing is estimated. Groups added by
+add_groups_multigroup() are left out, so that adding groups doesn't change
+the scores of groups that aren't in the model."><meta property="og:description" content="For scoring data from a group that is not in a scalar multigroup model:
 returns a single group model with the shared item parameters and the
 pooled latent distribution of the model's groups, i.e. the mean and
 variance of the equally weighted mixture of the groups' normal
-distributions. Nothing is estimated."></head><body>
+distributions. Nothing is estimated. Groups added by
+add_groups_multigroup() are left out, so that adding groups doesn't change
+the scores of groups that aren't in the model."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -55,7 +59,9 @@ distributions. Nothing is estimated."></head><body>
 returns a single group model with the shared item parameters and the
 pooled latent distribution of the model's groups, i.e. the mean and
 variance of the equally weighted mixture of the groups' normal
-distributions. Nothing is estimated.</p>
+distributions. Nothing is estimated. Groups added by
+<code><a href="add_groups_multigroup.html">add_groups_multigroup()</a></code> are left out, so that adding groups doesn't change
+the scores of groups that aren't in the model.</p>
     </div>
 
     <div class="section level2">
