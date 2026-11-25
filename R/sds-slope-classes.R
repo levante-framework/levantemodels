@@ -12,7 +12,7 @@
 #'   neither match nor non-match, don't change its class).
 #'
 #' These classes were chosen in the 2026-11 recalibration
-#' (levante-pilots `03_summaries/calibration/sds_slopes.R`): of 114 partitions
+#' (levante-pilots `03_summaries/calibration/sds_slopes.R`): of 112 partitions
 #' of the match items by pick position, earlier errors, set size and earlier
 #' matches, they fit best by BIC in each half of the data and on the earlier
 #' data. First picks and picks after a non-match discriminate about half as
