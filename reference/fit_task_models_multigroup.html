@@ -58,7 +58,8 @@ task, with each level of group as a group, in up to two steps:"></head><body>
 <span>  <span class="va">task</span>,</span>
 <span>  <span class="va">group</span>,</span>
 <span>  <span class="va">registry_dir</span>,</span>
-<span>  reference_group <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  reference_group <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  slope_classes <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -76,9 +77,10 @@ columns <code>item_task</code>, the grouping variable(s) (e.g. <code>language</c
 
 <dt id="arg-models">models<a class="anchor" aria-label="anchor" href="#arg-models"></a></dt>
 <dd><p>data frame of models to fit, one per row, with columns
-<code>nfact</code> (number of factors), <code>itemtype</code> (<code>"Rasch"</code> or <code>"2PL"</code>), and
-<code>invariance</code> (a name in <a href="invariances.html">invariances</a>: <code>"configural"</code>, <code>"metric"</code>, or
-<code>"scalar"</code>), and no other columns</p></dd>
+<code>nfact</code> (number of factors), <code>itemtype</code> (<code>"Rasch"</code>, <code>"2PL"</code>, or
+<code>"2PLclass"</code>), and <code>invariance</code> (a name in <a href="invariances.html">invariances</a>: <code>"configural"</code>,
+<code>"metric"</code>, or <code>"scalar"</code>), and no other columns. <code>"2PLclass"</code> is a 2PL
+whose items share one slope per class of <code>slope_classes</code>.</p></dd>
 
 
 <dt id="arg-priors">priors<a class="anchor" aria-label="anchor" href="#arg-priors"></a></dt>
@@ -104,6 +106,18 @@ column of either <code>task_data</code> or the nested <code>data</code></p></dd>
 <dd><p>group whose latent distribution is fixed at N(0, 1)
 when means and variances are freed (metric and scalar invariance); if
 <code>NULL</code> (default), the alphabetically first group, as in <code><a href="https://philchalmers.github.io/mirt/reference/multipleGroup.html" class="external-link">mirt::multipleGroup()</a></code></p></dd>
+
+
+<dt id="arg-slope-classes">slope_classes<a class="anchor" aria-label="anchor" href="#arg-slope-classes"></a></dt>
+<dd><p>function taking a vector of item UIDs and returning a
+character vector of the same length with each item's slope class (e.g.
+<code><a href="sds_slope_classes.html">sds_slope_classes()</a></code>); needed for <code>"2PLclass"</code> models, and ignored by
+the others. Items in the same class share one slope, constrained equal
+in the <code>overlap_items</code> fit. In the <code>all_items</code> fit, items not in the
+<code>overlap_items</code> model take their class's slope from it, fixed like the
+overlapping items' parameters; a class with no overlapping items gets
+one slope estimated there. The classes are kept in the record as
+<code>mod_rec@fit$slope_classes</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

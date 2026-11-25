@@ -91,6 +91,8 @@ Fit and record sets of pooled or multigroup IRT models for a task.
   multigroup models
 - [`add_groups_multigroup()`](https://levante-framework.github.io/levantemodels/reference/add_groups_multigroup.md)
   : Add new groups to a scalar multigroup model
+- [`sds_slope_classes()`](https://levante-framework.github.io/levantemodels/reference/sds_slope_classes.md)
+  : Slope classes of Same and Different items
 - [`fit_bylanguage_task()`](https://levante-framework.github.io/levantemodels/reference/fit_bylanguage_task.md)
   : Wrapper: given task, fit by_language model for each language
 - [`fit_bylanguage_lang()`](https://levante-framework.github.io/levantemodels/reference/fit_bylanguage_lang.md)

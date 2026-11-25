@@ -13,7 +13,8 @@ fit_task_models_multigroup(
   task,
   group,
   registry_dir,
-  reference_group = NULL
+  reference_group = NULL,
+  slope_classes = NULL
 )
 ```
 
@@ -30,10 +31,12 @@ fit_task_models_multigroup(
 - models:
 
   data frame of models to fit, one per row, with columns `nfact` (number
-  of factors), `itemtype` (`"Rasch"` or `"2PL"`), and `invariance` (a
-  name in
+  of factors), `itemtype` (`"Rasch"`, `"2PL"`, or `"2PLclass"`), and
+  `invariance` (a name in
   [invariances](https://levante-framework.github.io/levantemodels/reference/invariances.md):
-  `"configural"`, `"metric"`, or `"scalar"`), and no other columns
+  `"configural"`, `"metric"`, or `"scalar"`), and no other columns.
+  `"2PLclass"` is a 2PL whose items share one slope per class of
+  `slope_classes`.
 
 - priors:
 
@@ -60,6 +63,19 @@ fit_task_models_multigroup(
   variances are freed (metric and scalar invariance); if `NULL`
   (default), the alphabetically first group, as in
   [`mirt::multipleGroup()`](https://philchalmers.github.io/mirt/reference/multipleGroup.html)
+
+- slope_classes:
+
+  function taking a vector of item UIDs and returning a character vector
+  of the same length with each item's slope class (e.g.
+  [`sds_slope_classes()`](https://levante-framework.github.io/levantemodels/reference/sds_slope_classes.md));
+  needed for `"2PLclass"` models, and ignored by the others. Items in
+  the same class share one slope, constrained equal in the
+  `overlap_items` fit. In the `all_items` fit, items not in the
+  `overlap_items` model take their class's slope from it, fixed like the
+  overlapping items' parameters; a class with no overlapping items gets
+  one slope estimated there. The classes are kept in the record as
+  `mod_rec@fit$slope_classes`.
 
 ## Value
 
