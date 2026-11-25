@@ -93,6 +93,9 @@ paste_c <- \(...) paste(..., collapse = ",")
 #' @param item_sep string to put in between item_uid and instance index (defaults to "-")
 #' @param constrain_guess_groups whether to constrain estimated lower
 #'   asymptotes to be equal across groups (for scalar multigroup models)
+#' @param slope_classes named character vector mapping item UIDs to slope
+#'   classes, or `NULL` (default). Items in the same class share one slope
+#'   (`a1`); items not named in it keep their own. Ignored for Rasch models.
 #'
 #' @details If `df` has a logical `free_guess` column, the lower asymptote
 #'   (`g`) of the items with `free_guess = TRUE` is estimated instead of fixed
@@ -100,11 +103,17 @@ paste_c <- \(...) paste(..., collapse = ",")
 #'   shared by its instances. This applies to Rasch models only; in other
 #'   models it stays fixed at `chance`.
 #'
+#'   With `slope_classes`, the slope constraint for each class covers every
+#'   instance of every item in the class, in place of the per-item instance
+#'   constraint. In a multigroup model the constraint applies within each
+#'   group.
+#'
 #' @returns string that can be passed to `mirt.model()` as `input`
 #' @export
 generate_model_str_numeric <- function(df, df_prepped, item_type, f, # f = num factors
                                        priors = NULL, item_sep = "-",
-                                       constrain_guess_groups = FALSE) {
+                                       constrain_guess_groups = FALSE,
+                                       slope_classes = NULL) {
 
   items <- df |> pull(.data$item_uid) |> unique() # item ids
 
@@ -139,14 +148,32 @@ generate_model_str_numeric <- function(df, df_prepped, item_type, f, # f = num f
     which(prefixes == paste0(item_uid, item_sep))
   }
 
-  constraints <- items |> purrr::map(\(item_uid) {
-    matched_idx <- instance_idx(item_uid)
+  # items whose slope is shared with their class (dichotomous items with a
+  # slope, in slope_classes)
+  classed <- if (!is.null(slope_classes) && "a1" %in% params) {
+    items[items %in% names(slope_classes) &
+            purrr::map_lgl(items, \(i) "a1" %in% item_params[[i]])]
+  } else character()
 
-    if (length(matched_idx) > 1) {
+  item_constraints <- items |> purrr::map(\(item_uid) {
+    matched_idx <- instance_idx(item_uid)
+    item_pars <- item_params[[item_uid]]
+    # a classed item's slope is constrained with its class below
+    if (item_uid %in% classed) item_pars <- setdiff(item_pars, "a1")
+
+    if (length(matched_idx) > 1 && length(item_pars) > 0) {
       # constraint for item instance: (item_1, item_2, param)
-      purrr::map_chr(item_params[[item_uid]], \(p) glue::glue("({paste_c(matched_idx)},{p})")) |> paste_c()
+      purrr::map_chr(item_pars, \(p) glue::glue("({paste_c(matched_idx)},{p})")) |> paste_c()
     }
-  }) |> purrr::compact() |> paste_c() # combine into CONSTRAIN statement
+  })
+  # one slope per class: (every instance of every item in the class, a1)
+  class_groups <- if (length(classed) > 0) split(classed, slope_classes[classed]) else list()
+  class_constraints <- class_groups |> purrr::map(\(class_items) {
+    idx <- class_items |> purrr::map(instance_idx) |> unlist() |> sort()
+    if (length(idx) > 1) glue::glue("({paste_c(idx)},a1)")
+  })
+  constraints <- c(item_constraints, class_constraints) |>
+    purrr::compact() |> paste_c() # combine into CONSTRAIN statement
   constraint <- if (stringr::str_length(constraints) > 1) paste0("CONSTRAIN=", constraints) else ""
 
   # free the lower asymptote of free_guess items, bounded above by the item's
