@@ -289,3 +289,100 @@ test_that("fit_bylanguage_lang() fits each task of one language", {
   expect_equal(purrr::map_chr(calls, "task"), c("hf", "vocab"))
   expect_equal(purrr::map_chr(calls, "subset_val"), c("en", "en"))
 })
+
+test_that("generate_model_str_numeric() shares one slope per class", {
+  # every item dichotomous (both response categories present)
+  df <- tibble(item_uid = rep(c("a", "b", "c", "d"), each = 2), correct = rep(c(0, 1), 4))
+  df_prepped <- data.frame(`a-1` = 0, `a-2` = 1, `b-1` = 1, `c-1` = 0, `d-1` = 1, check.names = FALSE)
+  classes <- c(a = "x", b = "x", c = "y")
+
+  str <- generate_model_str_numeric(df, df_prepped, "2PL", 1, slope_classes = classes)
+  # a's instances share an intercept; a and b share a slope; c's class has one
+  # item and d has none, so their slopes are free
+  expect_match(str, "(1,2,d)", fixed = TRUE)
+  expect_match(str, "(1,2,3,a1)", fixed = TRUE)
+  expect_no_match(str, "(1,2,a1)", fixed = TRUE)
+  expect_no_match(str, "(4,a1)", fixed = TRUE)
+
+  # without classes, a's instances share a slope only with each other
+  expect_match(generate_model_str_numeric(df, df_prepped, "2PL", 1), "(1,2,a1)", fixed = TRUE)
+  # Rasch models have no slopes to constrain
+  expect_no_match(generate_model_str_numeric(df, df_prepped, "Rasch", 1, slope_classes = classes),
+                  "a1", fixed = TRUE)
+})
+
+test_that("2PLclass multigroup fits share one slope per class", {
+  skip_if_not_installed("mirt")
+  # items lo1-lo3 discriminate weakly and hi1-hi3 strongly; lo4 (class lo) and
+  # solo (its own class) are given only in s1, so they enter the all_items fit
+  sim <- \(n, theta_mean, seed, site, extra) {
+    set.seed(seed)
+    theta <- rnorm(n, theta_mean)
+    items <- c("lo1", "lo2", "lo3", "hi1", "hi2", "hi3", if (extra) c("lo4", "solo"))
+    a <- c(lo1 = 0.6, lo2 = 0.6, lo3 = 0.6, hi1 = 1.8, hi2 = 1.8, hi3 = 1.8, lo4 = 0.6, solo = 1.2)[items]
+    b <- c(lo1 = -1, lo2 = 0, lo3 = 1, hi1 = -1, hi2 = 0, hi3 = 1, lo4 = 0.5, solo = -0.5)[items]
+    probs <- plogis(sweep(outer(theta, b, `-`), 2, a, `*`))
+    resp <- matrix(rbinom(length(probs), 1, probs), nrow = n)
+    grid <- expand.grid(run = seq_len(n), item = seq_along(items))
+    tibble(run_id = paste0(site, "_", grid$run), item_uid = items[grid$item],
+           correct = as.logical(resp[cbind(grid$run, grid$item)]), chance = 0, site = site)
+  }
+  trials <- bind_rows(sim(800, 0, 1, "s1", TRUE), sim(800, 0.3, 2, "s2", FALSE))
+  task_data <- tibble(item_task = "sds", data = list(trials))
+  classes <- \(item_uids) dplyr::case_when(startsWith(item_uids, "lo") ~ "lo",
+                                           startsWith(item_uids, "hi") ~ "hi",
+                                           .default = item_uids)
+  registry_dir <- withr::local_tempdir()
+  suppressWarnings(suppressMessages(capture.output(
+    fit_task_models_multigroup(
+      task_data = task_data,
+      models = tibble(nfact = 1, itemtype = "2PLclass", invariance = "scalar"),
+      priors = list(d = c("norm", 0, 3), a1 = c("norm", 1, 0.3)),
+      task = "sds", group = "site", registry_dir = registry_dir,
+      slope_classes = classes
+    )
+  )))
+  read_model <- \(subset) readRDS(file.path(registry_dir, "sds", "multigroup_site", subset,
+                                            "sds_2plclass_f1_scalar.rds"))
+  slopes <- \(rec) {
+    vals <- model_vals(rec)
+    a1 <- vals[vals$name == "a1" & vals$group == "s1", ]
+    purrr::set_names(a1$value, sub("-\\d+$", "", a1$item))
+  }
+
+  overlap <- slopes(read_model("overlap_items"))
+  expect_setequal(names(overlap), c("lo1", "lo2", "lo3", "hi1", "hi2", "hi3"))
+  expect_equal(length(unique(round(overlap[c("lo1", "lo2", "lo3")], 8))), 1)
+  expect_equal(length(unique(round(overlap[c("hi1", "hi2", "hi3")], 8))), 1)
+  expect_lt(overlap[["lo1"]], 1)
+  expect_gt(overlap[["hi1"]], 1.3)
+
+  full_rec <- read_model("all_items")
+  full <- slopes(full_rec)
+  # lo4 takes class lo's slope from the overlap model; solo's is estimated
+  expect_equal(full[["lo4"]], overlap[["lo1"]], tolerance = 1e-8)
+  expect_equal(full[["hi1"]], overlap[["hi1"]], tolerance = 1e-8)
+  expect_false(isTRUE(all.equal(full[["solo"]], overlap[["lo1"]])))
+  expect_equal(full_rec@fit$slope_classes$class[full_rec@fit$slope_classes$item_uid == "lo4"], "lo")
+})
+
+test_that("2PLclass models need slope_classes", {
+  task_data <- tibble(item_task = "sds", data = list(fit_trials(50) |> mutate(site = "s1")))
+  expect_error(
+    fit_task_models_multigroup(
+      task_data = task_data,
+      models = tibble(nfact = 1, itemtype = "2PLclass", invariance = "scalar"),
+      priors = list(), task = "sds", group = "site", registry_dir = withr::local_tempdir()
+    ),
+    "2PLclass models need slope_classes"
+  )
+})
+
+test_that("sds_slope_classes() classes picks by position and earlier non-matches", {
+  expect_equal(
+    sds_slope_classes(c("sds_dimensions_color", "sds_same_shape", "sds_2match_choice1_0m0n",
+                        "sds_2match_choice2_1m0n", "sds_3match_choice3_1m0n",
+                        "sds_3match_choice3_1m1n", "sds_4match_choice4_1m2n", "hf_other")),
+    c("dimensions", "same", "match_first", "match_later", "match_later",
+      "match_after_nonmatch", "match_after_nonmatch", "hf_other"))
+})

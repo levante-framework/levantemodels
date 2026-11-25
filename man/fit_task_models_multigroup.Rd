@@ -11,7 +11,8 @@ fit_task_models_multigroup(
   task,
   group,
   registry_dir,
-  reference_group = NULL
+  reference_group = NULL,
+  slope_classes = NULL
 )
 }
 \arguments{
@@ -22,9 +23,10 @@ columns \code{item_task}, the grouping variable(s) (e.g. \code{language},
 \code{chance} (chance level of the item)}
 
 \item{models}{data frame of models to fit, one per row, with columns
-\code{nfact} (number of factors), \code{itemtype} (\code{"Rasch"} or \code{"2PL"}), and
-\code{invariance} (a name in \link{invariances}: \code{"configural"}, \code{"metric"}, or
-\code{"scalar"}), and no other columns}
+\code{nfact} (number of factors), \code{itemtype} (\code{"Rasch"}, \code{"2PL"}, or
+\code{"2PLclass"}), and \code{invariance} (a name in \link{invariances}: \code{"configural"},
+\code{"metric"}, or \code{"scalar"}), and no other columns. \code{"2PLclass"} is a 2PL
+whose items share one slope per class of \code{slope_classes}.}
 
 \item{priors}{list of priors, where names are parameter names (e.g. d, a1)
 and values are vectors of length 3 (priorType, val1, val2), e.g.
@@ -40,6 +42,16 @@ column of either \code{task_data} or the nested \code{data}}
 \item{reference_group}{group whose latent distribution is fixed at N(0, 1)
 when means and variances are freed (metric and scalar invariance); if
 \code{NULL} (default), the alphabetically first group, as in \code{\link[mirt:multipleGroup]{mirt::multipleGroup()}}}
+
+\item{slope_classes}{function taking a vector of item UIDs and returning a
+character vector of the same length with each item's slope class (e.g.
+\code{\link[=sds_slope_classes]{sds_slope_classes()}}); needed for \code{"2PLclass"} models, and ignored by
+the others. Items in the same class share one slope, constrained equal
+in the \code{overlap_items} fit. In the \code{all_items} fit, items not in the
+\code{overlap_items} model take their class's slope from it, fixed like the
+overlapping items' parameters; a class with no overlapping items gets
+one slope estimated there. The classes are kept in the record as
+\code{mod_rec@fit$slope_classes}.}
 }
 \value{
 Called for its side effect of writing model files (returns \code{NULL}

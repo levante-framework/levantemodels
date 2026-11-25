@@ -156,19 +156,30 @@ fit_bylanguage_lang <- \(task_data, models, priors, lang, registry_dir) {
 #' @export
 #' @inheritParams fit_task_models_pooled
 #' @param models data frame of models to fit, one per row, with columns
-#'   `nfact` (number of factors), `itemtype` (`"Rasch"` or `"2PL"`), and
-#'   `invariance` (a name in [invariances]: `"configural"`, `"metric"`, or
-#'   `"scalar"`), and no other columns
+#'   `nfact` (number of factors), `itemtype` (`"Rasch"`, `"2PL"`, or
+#'   `"2PLclass"`), and `invariance` (a name in [invariances]: `"configural"`,
+#'   `"metric"`, or `"scalar"`), and no other columns. `"2PLclass"` is a 2PL
+#'   whose items share one slope per class of `slope_classes`.
 #' @param group variable to use as groups (string or bare variable); can be a
 #'   column of either `task_data` or the nested `data`
 #' @param reference_group group whose latent distribution is fixed at N(0, 1)
 #'   when means and variances are freed (metric and scalar invariance); if
 #'   `NULL` (default), the alphabetically first group, as in [mirt::multipleGroup()]
+#' @param slope_classes function taking a vector of item UIDs and returning a
+#'   character vector of the same length with each item's slope class (e.g.
+#'   [sds_slope_classes()]); needed for `"2PLclass"` models, and ignored by
+#'   the others. Items in the same class share one slope, constrained equal
+#'   in the `overlap_items` fit. In the `all_items` fit, items not in the
+#'   `overlap_items` model take their class's slope from it, fixed like the
+#'   overlapping items' parameters; a class with no overlapping items gets
+#'   one slope estimated there. The classes are kept in the record as
+#'   `mod_rec@fit$slope_classes`.
 #' @returns Called for its side effect of writing model files (returns `NULL`
 #'   without fitting anything if `task` isn't in `task_data` or no items are
 #'   shared by all groups).
 fit_task_models_multigroup <- \(task_data, models, priors, task, group,
-                                registry_dir, reference_group = NULL) {
+                                registry_dir, reference_group = NULL,
+                                slope_classes = NULL) {
 
   group_name <- rlang::as_name(rlang::enquo(group))
 
@@ -218,18 +229,40 @@ fit_task_models_multigroup <- \(task_data, models, priors, task, group,
   out_dir <- file.path(registry_dir, task, paste0("multigroup_", group_name))
   dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 
+  if (any(models$itemtype == "2PLclass") && !is.function(slope_classes)) {
+    stop("2PLclass models need slope_classes, a function from item UIDs to slope classes")
+  }
+  # each item's slope class, for the items of a data frame
+  classes_of <- \(df) {
+    item_uids <- unique(df$item_uid)
+    classes <- slope_classes(item_uids)
+    stopifnot("slope_classes must return one class per item" = length(classes) == length(item_uids))
+    purrr::set_names(as.character(classes), item_uids)
+  }
+
   mods <- models |> purrr::pmap(
     \(nfact, itemtype, invariance) {
       message(glue::glue("fitting {task} multigroup model ({nfact} factor {itemtype} with {invariance} invariance)"))
 
+      # a 2PLclass model is a mirt 2PL with slopes constrained within classes
+      by_class <- itemtype == "2PLclass"
+      mirt_itemtype <- if (by_class) "2PL" else itemtype
+      classes_overlap <- if (by_class) classes_of(data_filtered_overlap)
+      classes_full <- if (by_class) classes_of(data_filtered_full)
+      record_classes <- \(mod_rec, classes) {
+        if (by_class) mod_rec@fit$slope_classes <- tibble::enframe(classes, "item_uid", "class")
+        mod_rec
+      }
+
       # generate model string with item constraints + dimensionality
-      model_str_overlap <- generate_model_str_numeric(data_filtered_overlap, data_prepped_overlap, itemtype, nfact, priors,
-                                                      constrain_guess_groups = invariance == "scalar")
+      model_str_overlap <- generate_model_str_numeric(data_filtered_overlap, data_prepped_overlap, mirt_itemtype, nfact, priors,
+                                                      constrain_guess_groups = invariance == "scalar",
+                                                      slope_classes = classes_overlap)
 
       # fit overlap items model
       mod_overlap <- mirt::multipleGroup(
         data = data_prepped_overlap,
-        itemtype = itemtype,
+        itemtype = mirt_itemtype,
         model = mirt::mirt.model(model_str_overlap),
         group = as_group(data_wide_overlap$group),
         invariance = invariances[[invariance]],
@@ -239,7 +272,8 @@ fit_task_models_multigroup <- \(task_data, models, priors, task, group,
       )
 
       # construct model record out of model
-      mod_rec_overlap <- modelrecord(mod_overlap, rownames(data_prepped_overlap))
+      mod_rec_overlap <- modelrecord(mod_overlap, rownames(data_prepped_overlap)) |>
+        record_classes(classes_overlap)
       mod_file <- glue::glue("{task}_{stringr::str_to_lower(itemtype)}_f{nfact}_{invariance}.rds")
       out_dir_overlap <- file.path(out_dir, "overlap_items")
       dir.create(out_dir_overlap, recursive = TRUE, showWarnings = FALSE)
@@ -265,12 +299,13 @@ fit_task_models_multigroup <- \(task_data, models, priors, task, group,
         select(-"item") |>
         distinct()
 
-      model_str_full <- generate_model_str_numeric(data_filtered_full, data_prepped_full, itemtype, nfact, priors,
-                                                   constrain_guess_groups = invariance == "scalar")
+      model_str_full <- generate_model_str_numeric(data_filtered_full, data_prepped_full, mirt_itemtype, nfact, priors,
+                                                   constrain_guess_groups = invariance == "scalar",
+                                                   slope_classes = classes_full)
       # set up parameter structure of full model
       mod_pars <- mirt::multipleGroup(
         data = data_prepped_full,
-        itemtype = itemtype,
+        itemtype = mirt_itemtype,
         model = mirt::mirt.model(model_str_full),
         group = as_group(data_wide_full$group),
         invariance = invariances[[invariance]],
@@ -287,14 +322,34 @@ fit_task_models_multigroup <- \(task_data, models, priors, task, group,
         # use fixes values from overlap when available, mark to not estimate
         mutate(value = if_else(!is.na(.data$fixed_value), .data$fixed_value, .data$value),
                est = if_else(!is.na(.data$fixed_est), .data$fixed_est, .data$est),
-               const = if_else(!is.na(.data$fixed_const), .data$fixed_const, .data$const)) |>
+               const = if_else(!is.na(.data$fixed_const), .data$fixed_const, .data$const))
+      if (by_class) {
+        # items not in the overlap model take their class's slope from it, so
+        # that a class has one slope
+        # (slope_class, since mirt's parameter table has its own `class`)
+        class_slopes <- overlap_vals |>
+          filter(.data$name == "a1") |>
+          mutate(slope_class = classes_overlap[.data$item_uid]) |>
+          distinct(.data$group, .data$slope_class, class_slope = .data$fixed_value)
+        stopifnot("a slope class has more than one slope in the overlap model" =
+                    !anyDuplicated(class_slopes[c("group", "slope_class")]))
+        mod_pars_fixed <- mod_pars_fixed |>
+          mutate(slope_class = classes_full[.data$item_uid]) |>
+          left_join(class_slopes, by = c("group", "slope_class")) |>
+          mutate(fix_slope = .data$name == "a1" & !is.na(.data$class_slope) & is.na(.data$fixed_value),
+                 value = if_else(.data$fix_slope, .data$class_slope, .data$value),
+                 est = if_else(.data$fix_slope, FALSE, .data$est),
+                 const = if_else(.data$fix_slope, "none", .data$const)) |>
+          select(-"slope_class", -"class_slope", -"fix_slope")
+      }
+      mod_pars_fixed <- mod_pars_fixed |>
         select(-"fixed_value", -"fixed_est", -"fixed_const", -"item_uid")
-      attr(mod_pars_fixed, "itemtype") <- itemtype
+      attr(mod_pars_fixed, "itemtype") <- mirt_itemtype
 
       # fit full items model
       mod_full <- mirt::multipleGroup(
         data = data_prepped_full,
-        itemtype = itemtype,
+        itemtype = mirt_itemtype,
         group = as_group(data_wide_full$group),
         invariance = invariances[[invariance]],
         pars = mod_pars_fixed,
@@ -304,7 +359,8 @@ fit_task_models_multigroup <- \(task_data, models, priors, task, group,
       )
 
       # construct model record out of model
-      mod_rec_full <- modelrecord(mod_full, rownames(data_prepped_full))
+      mod_rec_full <- modelrecord(mod_full, rownames(data_prepped_full)) |>
+        record_classes(classes_full)
 
       # save model record
       mod_file <- glue::glue("{task}_{stringr::str_to_lower(itemtype)}_f{nfact}_{invariance}.rds")
